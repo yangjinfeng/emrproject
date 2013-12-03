@@ -20,12 +20,18 @@ public class NewEmrFormater{
 	 */
 	public static void main(String[] args) throws Exception{
 		// TODO Auto-generated method stub
-		new NewEmrFormater().extractEmr("C:\\Users\\yangjinfeng\\Desktop\\evaluation\\WangCongjian\\WangCongjian", "C:\\Users\\yangjinfeng\\Desktop\\output");
+//		new NewEmrFormater().extractEmr("C:\\Users\\yangjinfeng\\Desktop\\evaluation\\WangCongjian\\WangCongjian", "C:\\Users\\yangjinfeng\\Desktop\\output");
 //		new EmrFormater().extractEmr("F:\\dianzibingli\\EMR\\review\\renzhenyu_finished", "C:\\Users\\yangjinfeng\\Desktop\\export");
 //		new EmrFormater().extractEmr("C:\\Users\\yangjinfeng\\Desktop\\liuzhiguang_finished_1", "C:\\Users\\yangjinfeng\\Desktop\\export");
 //		new EmrFormater().exportDischargeToXml(new File("F:\\dianzibingli\\EMR\\review\\zhaofangfang_finished\\H913255\\出院小结11.txt"), new File("chuyuanxiaojie.xml"),"GB2312");
 //		new EmrFormater().exportProgressToXml(new File("yangjinfeng/0714648/病程记录.txt"), new File("bingchengjilu.xml"));
 //		new NewEmrFormater().extractAllEmr("F:\\dianzibingli\\EMR\\review", "F:\\dianzibingli\\EMR\\xmlemr");
+		if(args== null || args.length !=2){
+			throw new Exception("参数必须两个，一个是要处理的病历所在文件夹，一个是输出文件夹");
+		}
+//		new NewEmrFormater().extractEmr(args[0],args[1]);
+		new NewEmrFormater().extractAllEmr(args[0],args[1]);
+		
 	}
 	
 	public void extractAllEmr(String emrdir,String exportdir)throws Exception{
@@ -51,6 +57,14 @@ public class NewEmrFormater{
 		}
 	}
 	
+	public static void main1(String[] args)throws Exception {
+		
+		
+		NewEmrFormater n = new NewEmrFormater();
+		
+		n.exportToXml("",new File("C:\\Users\\yangjinfeng\\Desktop\\evaluation\\WangCongjian\\WangCongjian\\7160838483progress.txt"),"","UTF-8");	
+	}
+	
 	
 	public void exportToXml(String userdir,File txtfile,String xmlFile,String charset)throws Exception{
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(txtfile),charset));
@@ -65,9 +79,6 @@ public class NewEmrFormater{
 			if(line.length() == 0){
 				continue;
 			}
-//			if(line.startsWith("入院日期")){
-//				System.out.println();
-//			}
 			line = CharConverter.instance.convert(line);
 			line = line.trim();
 			if(ignore(line)){
@@ -217,6 +228,7 @@ public class NewEmrFormater{
 	
 	public boolean matchSectionName(String line,String sectionName){
 //		System.out.println(EmrNameConst.toSectionNameRegex(sectionName));
+		
 		return line.matches(EmrNameConst.toSectionNameRegex(sectionName)+".*");
 	}
 	
@@ -230,21 +242,7 @@ public class NewEmrFormater{
 		return false;
 	}
 	
-	public static void main1(String[] args)throws Exception {
-		String str = "﻿病例特点";
-//		String str1= "病例特点";
-//		String str = "﻿".trim();
-//		String str1= "";
-		
-		System.out.println(str.length());
-		
-		NewEmrFormater n = new NewEmrFormater();
-		str = CharConverter.instance.convert(str);
-		System.out.println(n.matchSectionName(str, EmrNameConst.binglitedian));
-		System.out.println(n.isBlockBegin(str));
-		
-//		n.exportToXml("",new File("LiuWenchao\\9460651418progress.txt"),"","UTF-8");	
-	}
+
 	
 	
 	class Block{
