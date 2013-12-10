@@ -4,32 +4,46 @@ import java.util.ArrayList;
 
 public class EmrNameConst {
 	
-	public static String discharge_CH_Name = "³öÔºĞ¡½á";
-	public static String progress_CH_Name = "²¡³Ì¼ÇÂ¼";
+	public static String discharge_CH_Name = "å‡ºé™¢å°ç»“";
+	public static String progress_CH_Name = "ç—…ç¨‹è®°å½•";
 	public static String discharge_EN_Name = "discharge";
 	public static String progress_EN_Name = "progress";
 	
-	//²¡³Ì¼ÇÂ¼²¿·Ö
-	public static String zhusu = "Ö÷Ëß";
-	public static String binglitedian = "²¡ÀıÌØµã";
-	public static String linchuangchubuzhenduan = "ÁÙ´²³õ²½Õï¶Ï";
-	public static String zhenduanyiju = "Õï¶ÏÒÀ¾İ";
-	public static String jianbiezhenduan = "¼ø±ğÕï¶Ï";
-	public static String zhenliaojihua = "ÕïÁÆ¼Æ»®";
+	//ç—…ç¨‹è®°å½•éƒ¨åˆ†
+	public static String zhusu = "ä¸»è¯‰";
+	public static String binglitedian = "ç—…ä¾‹ç‰¹ç‚¹";
+	public static String linchuangchubuzhenduan = "ä¸´åºŠåˆæ­¥è¯Šæ–­";
+	public static String zhenduanyiju = "è¯Šæ–­ä¾æ®";
+	public static String jianbiezhenduan = "é‰´åˆ«è¯Šæ–­";
+	public static String zhenliaojihua = "è¯Šç–—è®¡åˆ’";
 	
 	
-	//³öÔºĞ¡½á²¿·Ö
+	//å‡ºé™¢å°ç»“éƒ¨åˆ†
 	
-	public static String huanzhexinxi = "»¼ÕßĞÅÏ¢";
-	public static String zhuyuanqizhiri = "×¡ÔºÆğÖ¹ÈÕ";
-	public static String menzhenshouzhizhenduan = "ÃÅÕïÊÕÖÎÕï¶Ï";
-//	public static String linchuangchubuzhenduan = "ÁÙ´²³õ²½Õï¶Ï";
-	public static String linchuangquedingzhenduan = "ÁÙ´²È·¶¨Õï¶Ï";
-	public static String ruyuanshiqingkuang = "ÈëÔºÊ±Çé¿ö";
-	public static String zhiliaojingguo = "ÖÎÁÆ¾­¹ı";
-	public static String chuyuanshiqingkuang = "³öÔºÊ±Çé¿ö";
-	public static String zhiliaoxiaoguo = "ÖÎÁÆĞ§¹û";
-	public static String chuyuanyizhu = "³öÔºÒ½Öö";
+	public static String huanzhexinxi = "æ‚£è€…ä¿¡æ¯";
+	public static String ruyuanriqi = "å…¥é™¢æ—¥æœŸ";
+	public static String zhuyuanqizhiri = "ä½é™¢èµ·æ­¢æ—¥";
+	public static String menzhenshouzhizhenduan = "é—¨è¯Šæ”¶æ²»è¯Šæ–­";
+//	public static String linchuangchubuzhenduan = "ä¸´åºŠåˆæ­¥è¯Šæ–­";
+	public static String linchuangquedingzhenduan = "ä¸´åºŠç¡®å®šè¯Šæ–­";
+	public static String ruyuanshiqingkuang = "å…¥é™¢æ—¶æƒ…å†µ";
+	public static String zhiliaojingguo = "æ²»ç–—ç»è¿‡";
+	public static String chuyuanshiqingkuang = "å‡ºé™¢æ—¶æƒ…å†µ";
+	public static String zhiliaoxiaoguo = "æ²»ç–—æ•ˆæœ";
+	public static String chuyuanyizhu = "å‡ºé™¢åŒ»å˜±";
+	
+	public static String toSectionNameRegex(String sectionName){
+		StringBuffer sb = new StringBuffer();
+		for(int i = 0;i < sectionName.length();i ++){
+			if(i == 0){
+				sb.append("^");
+			}else{
+				sb.append("[\\s]*");
+			}
+			sb.append(sectionName.charAt(i));
+		}
+		return sb.toString();
+	}
 	
 	public static String[] progressSectionNames = new String[]{
 //		zhusu,
@@ -70,8 +84,8 @@ public class EmrNameConst {
 														zhenduanyiju,
 														jianbiezhenduan,
 														zhenliaojihua,
-														huanzhexinxi,
-														zhuyuanqizhiri,
+//														huanzhexinxi,
+														ruyuanriqi,
 														menzhenshouzhizhenduan,
 														linchuangquedingzhenduan,
 														ruyuanshiqingkuang,
