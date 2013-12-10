@@ -29,8 +29,8 @@ public class NewEmrFormater{
 		if(args== null || args.length !=2){
 			throw new Exception("参数必须两个，一个是要处理的病历所在文件夹，一个是输出文件夹");
 		}
-//		new NewEmrFormater().extractEmr(args[0],args[1]);
-		new NewEmrFormater().extractAllEmr(args[0],args[1]);
+		new NewEmrFormater().extractEmr(args[0],args[1]);
+//		new NewEmrFormater().extractAllEmr(args[0],args[1]);
 		
 	}
 	
@@ -41,7 +41,17 @@ public class NewEmrFormater{
 		}
 	}
 	
-	
+	private class TxtFileFilter implements FilenameFilter{
+
+		@Override
+		public boolean accept(File dir, String name) {
+			// TODO Auto-generated method stub
+			return name.endsWith(".txt");
+		}
+
+		
+		
+	}
 	
 	
 	public void extractEmr(String userdir,String exportdir)throws Exception{
@@ -50,7 +60,7 @@ public class NewEmrFormater{
 		String username = userfile.getName();
 		new File(exportdir+"/"+username).mkdir();
 		
-		for(File file : userfile.listFiles()){
+		for(File file : userfile.listFiles(new TxtFileFilter())){
 			String filename = file.getName();
 			String newFilename = exportdir+"/"+filename.replace(".txt", ".xml");
 			exportToXml(username,file,newFilename,charset);			
@@ -62,7 +72,7 @@ public class NewEmrFormater{
 		
 		NewEmrFormater n = new NewEmrFormater();
 		
-		n.exportToXml("",new File("C:\\Users\\yangjinfeng\\Desktop\\evaluation\\WangCongjian\\WangCongjian\\7160838483progress.txt"),"","UTF-8");	
+		n.exportToXml("",new File("C:\\Users\\yangjinfeng\\Desktop\\问题文件\\问题文件\\5380527768progress.txt"),"","UTF-8");	
 	}
 	
 	
