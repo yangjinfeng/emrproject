@@ -2,12 +2,14 @@ package wi.emr.review;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FilenameFilter;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+
 
 public class Replacement {
 	
@@ -39,34 +41,41 @@ public class Replacement {
 	}
 	
 	public static void main(String[] args)throws Exception {
-		new Replacement().replaceAll(args[0]);
+		FileFilter filter = new FileFilter() {
+			public boolean accept(File pathname) {
+				return pathname.isDirectory() || pathname.getName().endsWith(".txt");
+			}
+		};
+		new Replacement().replaceAll(args[0],filter);
+	}
+	
+	
+	public void replaceFile(File txt)throws Exception{
+		ArrayList<String> list = new ArrayList<String>();
+		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(txt), "UTF-8"));
+		String line = null;
+		while((line = br.readLine())!=null){
+			list.add(replace(line));
+		}
+		br.close();
+		PrintWriter pw = new PrintWriter(txt,"UTF-8");
+		for(String str : list){
+			pw.println(str);
+		}
+		pw.close();
 	}
 
 	/**
 	 * @param args
 	 */
-	public void replaceAll(String dir) throws Exception{
-		// TODO Auto-generated method stub
-		File[] txtfiles = new File(dir).listFiles(new FilenameFilter() {
-			public boolean accept(File dir, String name) {
-				// TODO Auto-generated method stub
-				return name.endsWith("txt");
+	public void replaceAll(String dir,FileFilter filter) throws Exception{
+		File[] files = new File(dir).listFiles(filter);
+		for(File file : files){
+			if(file.isDirectory()){
+				replaceAll(file.getAbsolutePath(),filter);
+			}else{
+				replaceFile(file);
 			}
-		});
-
-		for(File txt : txtfiles){
-			ArrayList<String> list = new ArrayList<String>();
-			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(txt), "UTF-8"));
-			String line = null;
-			while((line = br.readLine())!=null){
-				list.add(replace(line));
-			}
-			br.close();
-			PrintWriter pw = new PrintWriter(txt,"UTF-8");
-			for(String str : list){
-				pw.println(str);
-			}
-			pw.close();
 			
 		}
 	}
