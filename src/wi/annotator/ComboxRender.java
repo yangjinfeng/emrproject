@@ -8,6 +8,10 @@ import javax.swing.ListCellRenderer;
 
 public class ComboxRender extends DefaultListCellRenderer implements ListCellRenderer {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private boolean isForeground;
 	
 
