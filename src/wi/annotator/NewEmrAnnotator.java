@@ -43,7 +43,7 @@ public class NewEmrAnnotator
 	    	{
 				
 	    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//文件选择器
-	    		j.setFileFilter(new EmrFileFiller());
+	    		j.setFileFilter(new EmrFileFiller(".xml"));
 	    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 	    		{	    	    	
 	    	    	try{
@@ -94,7 +94,7 @@ public class NewEmrAnnotator
 	    	{
 	    		
 	    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//文件选择器
-	    		j.setFileFilter(new EntityFileFilter());
+	    		j.setFileFilter(new EmrFileFiller(".ent"));
 	    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 	    	    	 try{
 	    	    		 clearTable(table);
@@ -617,7 +617,7 @@ public class NewEmrAnnotator
 		 buttonInRel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 		    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//文件选择器
-		    		j.setFileFilter(new RelationFileFilter());
+		    		j.setFileFilter(new EmrFileFiller(".rel"));
 		    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 		    	    	 try{
 		 	    	    	File f=j.getSelectedFile();
