@@ -43,7 +43,7 @@ public class NewEmrAnnotatorViewer
 	    	{
 				
 	    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//ÎÄ¼þÑ¡ÔñÆ÷
-	    		j.setFileFilter(new EmrFileFiller());
+	    		j.setFileFilter(new EmrFileFiller(".xml"));
 	    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 	    		{	    	    	
 	    	    	try{
