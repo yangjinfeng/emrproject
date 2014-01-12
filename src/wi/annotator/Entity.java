@@ -7,30 +7,47 @@ public class Entity implements Comparable<Entity>{
 	private int endPos;
 	private String entityType;
 	private String assertType;
+	private int diff = 0;
 	
 	public static String ENT_START_POS_CHAR = "¡¾";
 	public static String ENT_END_POS_CHAR = "¡¿";
 	
 	
 	public static Entity createBySaveStr(String saveStr){
-		Entity ent = new Entity();
-		String[] fields = saveStr.split(" ");
-		for(String field : fields){
-			if(field.startsWith("C")){
-				ent.setEntity(field.substring(field.indexOf("=")+1));
-			}else if(field.startsWith("P")){
-				String ps = field.substring(field.indexOf("=")+1);
-				ent.setStartPos(Integer.valueOf(ps.substring(0,ps.indexOf(":"))));
-				ent.setEndPos(Integer.valueOf(ps.substring(ps.indexOf(":")+1)));
-			}else if(field.startsWith("T")){
-				ent.setEntityType(field.substring(field.indexOf("=")+1));
-			}else if(field.startsWith("A")){
-				ent.setAssertType(field.substring(field.indexOf("=")+1));
-			}
-		}
-		return ent;
+		 Entity ent = new Entity();
+		    String[] fields = saveStr.split("(C=)|(P=)|(T=)|(A=)|(X=)");
+		    int index = 0;
+		    for (String field : fields) {
+		      String f = field.trim();
+		      if (f.length() != 0)
+		      {
+		        if (index == 0) {
+		          ent.setEntity(f);
+		        } else if (index == 1) {
+		          String ps = f;
+		          ent.setStartPos(Integer.valueOf(ps.substring(0, ps.indexOf(":"))).intValue());
+		          ent.setEndPos(Integer.valueOf(ps.substring(ps.indexOf(":") + 1)).intValue());
+		        } else if (index == 2) {
+		          ent.setEntityType(f);
+		        } else if (index == 3) {
+		          ent.setAssertType(f);
+		        }else if (index == 4) {
+		          ent.setDiff(Integer.valueOf(f));
+		        }
+		        index++;
+		      }
+		    }
+		    return ent;
 	}
 	
+	public int getDiff() {
+		return diff;
+	}
+
+	public void setDiff(int diff) {
+		this.diff = diff;
+	}
+
 	public static Entity createByAnnotationStr(String annotation){
 		Entity ent = new Entity();
 		String str = annotation.substring(annotation.indexOf(ENT_START_POS_CHAR)+1,annotation.indexOf(ENT_END_POS_CHAR));
@@ -80,6 +97,9 @@ public class Entity implements Comparable<Entity>{
 		String saveStr = "C=" + entity +" P="+startPos+":"+endPos+" T="+getEntityType();
 		if(getAssertType() != null){
 			saveStr = saveStr   +" A="+getAssertType();
+		}
+		if(getDiff() == 1){
+			saveStr = saveStr   +" X="+getDiff();
 		}
 		return saveStr;
 	}
