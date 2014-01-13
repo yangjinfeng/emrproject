@@ -31,6 +31,7 @@ import javax.swing.JTextField;
 
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Scanner;
 import java.util.Vector;
@@ -114,18 +115,27 @@ public class NewEmrAnnotatorComparator
 	    	    		sudo.setEndPos(textPane.getText().length());
 	    	    		clearEntityColor(textPane,sudo);
 	    	    		DefaultTableModel model = (DefaultTableModel)table.getModel();
+	    	    		ArrayList<Entity> ents = new ArrayList<Entity>(); 
 	    	    		while((line = br.readLine())!= null){
 	    	    			if(line.length() > 0){
-	    	    				Entity ent = Entity.createBySaveStr(line);
-	    	    				TypeColor assertType = null;
-	    	    				if(ent.getAssertType() != null){
-	    	    					assertType = TypeColorMap.getType(ent.getAssertType());
-	    	    				}
-	    	    				Object[] rowData = new Object[]{ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.getDiff()};
-	    	    				model.addRow(rowData);
-	    	    				setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
+	    	    				Entity ent = Entity.createBySaveStr(line);	    	    				
+	    	    				ents.add(ent);	    	    				
 	    	    			}
 	    	    		}
+	    	    		Collections.sort(ents);
+	    	    		for(Entity ent : ents){
+	    	    			TypeColor assertType = null;
+	    	    			if(ent.getAssertType() != null){
+	    	    				assertType = TypeColorMap.getType(ent.getAssertType());
+	    	    			}
+	    	    			
+	    	    			Object[] rowData = new Object[]{ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.getDiff()};
+	    	    			model.addRow(rowData);
+	    	    			setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
+	    	    			
+	    	    		}
+	    	    		
+	    	    		
 	    	    		br.close();
 	    	    		
 	    	    		
@@ -163,6 +173,7 @@ public class NewEmrAnnotatorComparator
 			    		entity.setEntity(textPane.getText(p0, p1-p0));
 			    		entity.setStartPos(p0);
 			    		entity.setEndPos(p1);
+			    		entity = EntityCleaner.cleanEntity(entity);
 			    		String annotationStr = entity.toAnnotation();
 			    		Object[] rowvalue = new Object[]{annotationStr,null,null,0};
 			    		model.addRow(rowvalue);
