@@ -21,6 +21,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
 import javax.swing.JSplitPane;
@@ -394,6 +395,7 @@ public class NewEmrAnnotatorComparator
 		model.setColumnIdentifiers(columnNames);
 		table.setModel(model);
 		table.getColumn("类型").setCellRenderer(new TypeCellRender(true));
+		 table.getColumn("保留").setCellRenderer(new ReserveRenderer());
 		
 		table.setRowHeight(25);
 		
@@ -420,11 +422,23 @@ public class NewEmrAnnotatorComparator
 	    table.getColumn("修饰").setCellEditor(asserteditor);//将第3列设为附类下拉选项
 	    
 	    
-	    DefaultCellEditor reserveeditor = new DefaultCellEditor(new MyCheckbox());
+	    final JCheckBox chlbx = new JCheckBox();
+	    chlbx.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if(chlbx.isSelected()){
+					int bj = (Integer)table.getModel().getValueAt(table.getSelectedRow(), table.getColumnModel().getColumnIndex("标记"));
+//					chlbx.setDiffflag(bj);
+					table.getModel().setValueAt(bj*10, table.getSelectedRow(), table.getColumnModel().getColumnIndex("标记"));
+				}else{
+					int bj = (Integer)table.getModel().getValueAt(table.getSelectedRow(), table.getColumnModel().getColumnIndex("标记"));
+					table.getModel().setValueAt(bj/10, table.getSelectedRow(), table.getColumnModel().getColumnIndex("标记"));
+				}
+			}
+		});
+	    DefaultCellEditor reserveeditor = new DefaultCellEditor(chlbx);
 	    table.getColumn("保留").setCellEditor(reserveeditor);//将第3列设为附类下拉选项
 
 	    
-	    table.getColumn("保留").setCellRenderer(new ReserveRenderer());
 	    
 	    addTableMouseListener(textPane,table);
 	    
@@ -439,32 +453,30 @@ public class NewEmrAnnotatorComparator
 	     table.getTableHeader().getColumnModel().getColumn(bindex).setMaxWidth(0); 
 	     table.getTableHeader().getColumnModel().getColumn(bindex).setMinWidth(0); 
 	     
-	    
-	    TableColumnModel tcm = table.getColumnModel();  
-        for (int i = 0, n = tcm.getColumnCount(); i < n; i++)   
-        {  
-            TableColumn tc = tcm.getColumn(i);  
-            tc.setCellRenderer(new RowRenderer());  
-        }  
+	    table.getColumn("实体").setCellRenderer(new RowRenderer()); 
 	    
 	    return  table;
 	}
 	
 	private static class RowRenderer extends DefaultTableCellRenderer{
 
+		//0：一致标注,1第一个不同,2第二个不同,3设置为正确的标注
 		@Override
 		public Component getTableCellRendererComponent(JTable table,
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
 			// TODO Auto-generated method stub
-			int diff = (Integer)table.getModel().getValueAt(row, 3);
-			if(diff == 1){
-				setBackground(Color.YELLOW);  
-			}else{
-				setBackground(Color.WHITE);
-			}
-			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+			Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
 					row, column);
+			int diff = (Integer)table.getModel().getValueAt(row, table.getColumnModel().getColumnIndex("标记"));
+			if(diff == 1){
+				comp.setBackground(TypeColor.parseColor("00CED1"));  
+			}else if(diff == 2){
+				comp.setBackground(Color.GREEN);  
+			}else{
+				comp.setBackground(Color.WHITE);  
+			}
+			return comp;
 		}
 		
 	}
@@ -481,23 +493,24 @@ public class NewEmrAnnotatorComparator
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
 						row, column);
 			}else{
-				return  (Component)table.getColumn("保留").getCellEditor();
+				return  ((DefaultCellEditor)(table.getColumn("保留").getCellEditor())).getComponent();
 			}
 
 		}
 	}
 	
 	
-	private static class MyCheckbox extends JCheckBox{
-		private int diffflag;
-		public int getDiffflag() {
-			return diffflag;
-		}
-		public void setDiffflag(int diffflag) {
-			this.diffflag = diffflag;
-		}
-		
-	}
+//	private static class MyCheckbox extends JCheckBox{
+//		private int diffflag;
+//		public int getDiffflag() {
+//			return diffflag;
+//		}
+//		public void setDiffflag(int diffflag) {
+//			this.diffflag = diffflag;
+//		}
+//		
+//		
+//	}
 	
 	private static JPanel createEntityButtonPanel(JTextPane textPane,JTable table){
 		JPanel btnpanel = new JPanel();

@@ -98,7 +98,7 @@ public class Entity implements Comparable<Entity>{
 		if(getAssertType() != null){
 			saveStr = saveStr   +" A="+getAssertType();
 		}
-		if(getDiff() == 1){
+		if(getDiff() == 1 || getDiff() == 2){
 			saveStr = saveStr   +" X="+getDiff();
 		}
 		return saveStr;

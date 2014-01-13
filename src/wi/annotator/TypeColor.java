@@ -42,5 +42,12 @@ public class TypeColor {
 		return getTypeName();
 	}
 	
+	public static Color parseColor(String colorStr){
+		Color color = new Color(Integer.parseInt(colorStr.substring(0, 2), 16),
+				Integer.parseInt(colorStr.substring(2, 4), 16),
+				Integer.parseInt(colorStr.substring(4, 6), 16));
+		return color;
+	}
+	
 
 }
