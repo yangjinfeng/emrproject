@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class EntityCleaner {
-	private static Character[] fuhao = new Character[]{'.',',','"','\'',':',';','¡¢','(',')','£»'};
+	private static Character[] fuhao = new Character[]{'.',',','"','\'',':',';','¡¢','£»','¡¢','¡°','¡±'};
 	private static Set<Character> fuhaoset = new HashSet<Character>(Arrays.asList(fuhao));
 	
 	
