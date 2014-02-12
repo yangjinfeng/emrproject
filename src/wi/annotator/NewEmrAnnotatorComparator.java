@@ -308,6 +308,7 @@ public class NewEmrAnnotatorComparator
 		    			Vector rowdatas = model.getDataVector();
 		    			ArrayList<Entity> entities = new ArrayList<Entity>();
 		    			StringBuffer sb = new StringBuffer();
+		    			StringBuffer warning = new StringBuffer();
 		    			for(Object obj : rowdatas){
 		    				String outStr = "";
 		    				Vector rowdata = (Vector)obj;
@@ -329,7 +330,7 @@ public class NewEmrAnnotatorComparator
 		    				
 		    				if(ent.getEntity().matches(".*\\d+.*")){
 		    					int rowno = (Integer)rowdata.get(0);
-		    					sb.append("第"+rowno+"行实体中包含数字，不应包含数字\n");
+		    					warning.append("第"+rowno+"行实体中包含数字\n");
 		    				}
 		    				TypeColor asserttype = (TypeColor)rowdata.get(3);
 		    				if(asserttype != null){
@@ -348,17 +349,30 @@ public class NewEmrAnnotatorComparator
 		    			}
 		    			String errMsg = sb.toString();
 		    			if(errMsg.length() == 0){
-		    				PrintWriter out = new PrintWriter(path,"UTF-8");
-		    				Collections.sort(entities);
-		    				for(Entity ent : entities){
-		    					out.println(ent.toSave());
-		    				}		    				
-		    				out.flush();
-		    				out.close();
-		    				JOptionPane.showMessageDialog(null, "保存成功  路径："+path, "提示",
-		    						JOptionPane.INFORMATION_MESSAGE);
+		    				String warningMsg = warning.toString();
+		    				boolean resume = true;
+		    				if(warningMsg.length() > 0){
+		    					warningMsg = warningMsg +"\n 是否继续？";
+		    					int state = JOptionPane.showConfirmDialog(null, warningMsg, "警告", JOptionPane.YES_NO_OPTION);
+		    					if(state != JOptionPane.YES_OPTION){
+		    						resume = false;
+		    					}
+		    				}
+		    				if(resume){
+		    					PrintWriter out = new PrintWriter(path,"UTF-8");
+		    					Collections.sort(entities);
+		    					for(Entity ent : entities){
+		    						out.println(ent.toSave());
+		    					}		    				
+		    					out.flush();
+		    					out.close();
+		    					JOptionPane.showMessageDialog(null, "保存成功  路径："+path, "提示",JOptionPane.INFORMATION_MESSAGE);
+		    				}else{
+		    					JOptionPane.showMessageDialog(null, "标注结果未保存", "提示",JOptionPane.INFORMATION_MESSAGE);
+		    				}
+		    				
 		    			}else{
-		    				JOptionPane.showMessageDialog(null,errMsg, "提示",
+		    				JOptionPane.showMessageDialog(null,errMsg, "错误",
 		    						JOptionPane.INFORMATION_MESSAGE);
 		    			}
 		    			
