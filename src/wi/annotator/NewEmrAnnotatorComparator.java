@@ -82,7 +82,7 @@ public class NewEmrAnnotatorComparator
 	    	    		
 	    	    	}catch(Exception ee){}
 	    	    	
-	    	    	
+	    	    	textPane.setCaretPosition(0);
 	    	    	
 	    		}
 	    	       
@@ -121,13 +121,15 @@ public class NewEmrAnnotatorComparator
 				}
 			}
 			Collections.sort(ents);
+			int rowno = 0;
 			for(Entity ent : ents){
+				rowno ++;
 				TypeColor assertType = null;
 				if(ent.getAssertType() != null){
 					assertType = TypeColorMap.getType(ent.getAssertType());
 				}
 
-				Object[] rowData = new Object[]{ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.getDiff()};
+				Object[] rowData = new Object[]{rowno,ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.getDiff()};
 				model.addRow(rowData);
 				setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
 
@@ -173,13 +175,15 @@ public class NewEmrAnnotatorComparator
 	    	    			}
 	    	    		}
 	    	    		Collections.sort(ents);
+	    	    		int rowno = 0;
 	    	    		for(Entity ent : ents){
+	    	    			rowno ++;
 	    	    			TypeColor assertType = null;
 	    	    			if(ent.getAssertType() != null){
 	    	    				assertType = TypeColorMap.getType(ent.getAssertType());
 	    	    			}
 	    	    			
-	    	    			Object[] rowData = new Object[]{ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.getDiff()};
+	    	    			Object[] rowData = new Object[]{rowno,ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.getDiff()};
 	    	    			model.addRow(rowData);
 	    	    			setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
 	    	    			
@@ -187,7 +191,6 @@ public class NewEmrAnnotatorComparator
 	    	    		
 	    	    		
 	    	    		br.close();
-	    	    		
 	    	    		
 	 	    	    	
 	    	    	 }catch(Exception ex){
@@ -225,12 +228,15 @@ public class NewEmrAnnotatorComparator
 			    		entity.setEndPos(p1);
 			    		entity = EntityCleaner.cleanEntity(entity);
 			    		String annotationStr = entity.toAnnotation();
-			    		Object[] rowvalue = new Object[]{annotationStr,null,null,0};
+			    		Object[] rowvalue = new Object[]{model.getRowCount() +1, annotationStr,null,null,0};
 			    		model.addRow(rowvalue);
 			    		int row = model.getRowCount() - 1;
 			    		table.setRowSelectionInterval(row, row);
 			    		
 			    		setEntityBackground(textPane,entity);
+			    		
+			    		Rectangle rect = table.getCellRect(table.getRowCount()-1, 0, true);  
+			    		table.scrollRectToVisible(rect);
 			    		
 					} catch (BadLocationException e1) {
 						e1.printStackTrace();
@@ -297,38 +303,64 @@ public class NewEmrAnnotatorComparator
 	    			path = file.getSelectedFile().getAbsolutePath();
 		    		try {
 		    			GlobalCache.currentPath = path;
-		    			PrintWriter out = new PrintWriter(path,"UTF-8");		
+		    					
 		    			DefaultTableModel model = (DefaultTableModel)table.getModel();
 		    			Vector rowdatas = model.getDataVector();
 		    			ArrayList<Entity> entities = new ArrayList<Entity>();
+		    			StringBuffer sb = new StringBuffer();
 		    			for(Object obj : rowdatas){
 		    				String outStr = "";
 		    				Vector rowdata = (Vector)obj;
-		    				String annotation = (String)rowdata.get(0);
+		    				String annotation = (String)rowdata.get(1);
 		    				Entity ent = Entity.createByAnnotationStr(annotation);
-		    				TypeColor entitytype = (TypeColor)rowdata.get(1);
+		    				TypeColor entitytype = (TypeColor)rowdata.get(2);
+		    				boolean isMedicalProblem = false;
 		    				if(entitytype != null){
 		    					ent.setEntityType(entitytype.getTypeId());
+		    					if(entitytype.getTypeId().equals("disease") ||
+		    							entitytype.getTypeId().equals("complaintsymptom") ||
+		    							entitytype.getTypeId().equals("testresult")){
+		    						isMedicalProblem = true;
+		    					}
+		    				}else{
+		    					int rowno = (Integer)rowdata.get(0);
+		    					sb.append("第"+rowno+"行实体应选择实体类型\n");
 		    				}
-		    				TypeColor asserttype = (TypeColor)rowdata.get(2);
+		    				
+		    				if(ent.getEntity().matches(".*\\d+.*")){
+		    					int rowno = (Integer)rowdata.get(0);
+		    					sb.append("第"+rowno+"行实体中包含数字，不应包含数字\n");
+		    				}
+		    				TypeColor asserttype = (TypeColor)rowdata.get(3);
 		    				if(asserttype != null){
 		    					ent.setAssertType(asserttype.getTypeId());
 		    				}
-		    				int diff = (Integer)rowdata.get(3);
+		    				if(asserttype == null && isMedicalProblem){
+		    					int rowno = (Integer)rowdata.get(0);
+		    					sb.append("第"+rowno+"行需要选择修饰类型\n");
+		    				}
+		    				int diff = (Integer)rowdata.get(4);
 		    				ent.setDiff(diff);
 		    				if(ent.getEntityType() != null){
 		    					entities.add(ent);
 		    				}
 		    				
 		    			}
-		    			Collections.sort(entities);
-		    			for(Entity ent : entities){
-		    				out.println(ent.toSave());
+		    			String errMsg = sb.toString();
+		    			if(errMsg.length() == 0){
+		    				PrintWriter out = new PrintWriter(path,"UTF-8");
+		    				Collections.sort(entities);
+		    				for(Entity ent : entities){
+		    					out.println(ent.toSave());
+		    				}		    				
+		    				out.flush();
+		    				out.close();
+		    				JOptionPane.showMessageDialog(null, "保存成功  路径："+path, "提示",
+		    						JOptionPane.INFORMATION_MESSAGE);
+		    			}else{
+		    				JOptionPane.showMessageDialog(null,errMsg, "提示",
+		    						JOptionPane.INFORMATION_MESSAGE);
 		    			}
-		    			
-		    			out.flush();
-		    			out.close();
-		    			
 		    			
 					} catch (FileNotFoundException e1) {
 						e1.printStackTrace();
@@ -336,8 +368,6 @@ public class NewEmrAnnotatorComparator
 						e1.printStackTrace();
 					}
 		    		
-		    		JOptionPane.showMessageDialog(null, "保存成功  路径："+path, "提示",
-	    		            JOptionPane.INFORMATION_MESSAGE);
 	    		}
 	    		else
 	    		{
@@ -359,6 +389,7 @@ public class NewEmrAnnotatorComparator
 				Entity ent = Entity.createByAnnotationStr(entityvalue);
 				setEntityBackground(textPane,ent);
 				GlobalCache.pastSelectedEntity = ent;
+				textPane.setCaretPosition(ent.getStartPos());
 			}
 		});
 	}
@@ -405,7 +436,7 @@ public class NewEmrAnnotatorComparator
 	
 	
 	private static JTable createEntityTable(final JTextPane textPane,final boolean isForEntity){
-		Object columnNames[] = {"实体", "类型","修饰","标记","保留"};//表格的4列意义
+		Object columnNames[] = {"行号","实体", "类型","修饰","标记","保留"};//表格的4列意义
 //		final Object rowData[][] = new Object[maxNum][2];//建立表格中的元素数组
 		final JTable table = new JTable(null, columnNames);//建立表格
 		DefaultTableModel model = new DefaultTableModel(){
@@ -514,6 +545,8 @@ public class NewEmrAnnotatorComparator
 	     table.getTableHeader().getColumnModel().getColumn(bindex).setMaxWidth(0); 
 	     table.getTableHeader().getColumnModel().getColumn(bindex).setMinWidth(0); 
 	     
+	     table.getColumn("行号").setPreferredWidth(1);
+	     
 	    table.getColumn("实体").setCellRenderer(new RowRenderer()); 
 	    
 	    return  table;
@@ -529,13 +562,16 @@ public class NewEmrAnnotatorComparator
 			// TODO Auto-generated method stub
 			Component comp = super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
 					row, column);
-			int diff = (Integer)table.getModel().getValueAt(row, table.getColumnModel().getColumnIndex("标记"));
-			if(diff == 1){
-				comp.setBackground(TypeColor.parseColor("00CED1"));  
-			}else if(diff == 2){
-				comp.setBackground(Color.GREEN);  
-			}else{
-				comp.setBackground(Color.WHITE);  
+			Object bjvalue = (Integer)table.getModel().getValueAt(row, table.getColumnModel().getColumnIndex("标记"));
+			if(bjvalue != null){
+				int diff = (Integer)bjvalue;
+				if(diff == 1){
+					comp.setBackground(TypeColor.parseColor("00CED1"));  
+				}else if(diff == 2){
+					comp.setBackground(Color.GREEN);  
+				}else{
+					comp.setBackground(Color.WHITE);  
+				}
 			}
 			return comp;
 		}
@@ -549,13 +585,26 @@ public class NewEmrAnnotatorComparator
 				Object value, boolean isSelected, boolean hasFocus, int row,
 				int column) {
 			// TODO Auto-generated method stub
-			int bj= (Integer)table.getValueAt(row, table.getColumnModel().getColumnIndex("标记"));
-			if(bj == 0){
-				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
-						row, column);
-			}else{
-				return  ((DefaultCellEditor)(table.getColumn("保留").getCellEditor())).getComponent();
+			Object bjvalue = (Integer)table.getValueAt(row, table.getColumnModel().getColumnIndex("标记"));
+			if(bjvalue != null){
+				int bj = (Integer)bjvalue;
+				if(bj == 0){
+					return super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+							row, column);
+				}else{
+					JCheckBox jcb = new JCheckBox();
+					
+					if(bj == 10 || bj == 20){
+						jcb.setSelected(true);
+					}else{
+						jcb.setSelected(false);
+					}
+					return  jcb;				
+					
+				}
 			}
+			return super.getTableCellRendererComponent(table, value, isSelected, hasFocus,
+					row, column);
 
 		}
 	}
