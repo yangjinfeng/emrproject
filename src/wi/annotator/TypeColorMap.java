@@ -12,6 +12,7 @@ public class TypeColorMap {
 	private  static LinkedHashMap<String, TypeColor> entityMap = new LinkedHashMap<String, TypeColor>();
 	private static LinkedHashMap<String, TypeColor> assertMap = new LinkedHashMap<String, TypeColor>();
 	private static LinkedHashMap<String, TypeColor> relationMap = new LinkedHashMap<String, TypeColor>();
+	private static LinkedHashMap<String, TypeColor> tassertMap = new LinkedHashMap<String, TypeColor>();
 	
 	static{
 		
@@ -19,6 +20,7 @@ public class TypeColorMap {
 			fillMapFromCfg(entityMap,"config/entitytype.properties");
 			fillMapFromCfg(assertMap,"config/asserttype.properties");
 			fillMapFromCfg(relationMap,"config/relationtype.properties");
+			fillMapFromCfg(tassertMap,"config/tasserttype.properties");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,6 +60,8 @@ public class TypeColorMap {
 			return assertMap.get(typeId);
 		}else if(relationMap.containsKey(typeId)){
 			return relationMap.get(typeId);
+		}else if(tassertMap.containsKey(typeId)){
+			return assertMap.get(typeId);
 		}
 		return null;
 	} 
@@ -68,6 +72,9 @@ public class TypeColorMap {
 	
 	public static TypeColor[] getAssertTypeArray(){
 		return assertMap.values().toArray(new TypeColor[0]);
+	}
+	public static TypeColor[] getTAssertTypeArray(){
+		return tassertMap.values().toArray(new TypeColor[0]);
 	}
 	
 	public static TypeColor[] getRelationTypeArray(){

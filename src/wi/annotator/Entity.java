@@ -30,13 +30,13 @@ public class Entity implements Comparable<Entity>{
 		        } else if (index == 2) {
 		          ent.setEntityType(f);
 		        } else if (index == 3) {
-		        	if(ent.getEntityType().equals("test") || ent.getEntityType().equals("treatment") ){
+		        	if(ent.getEntityType().equals("test") || ent.getEntityType().equals("diseasetype") ){
 		        		ent.setDiff(Integer.valueOf(f));
 		        	}else{
 		        		ent.setAssertType(f);
 		        	}
 		        }else if (index == 4) {
-		        	if( !(ent.getEntityType().equals("test") || ent.getEntityType().equals("treatment")) ){
+		        	if( !(ent.getEntityType().equals("test") || ent.getEntityType().equals("diseasetype")) ){
 		        		ent.setDiff(Integer.valueOf(f));
 		        	}
 		        }
