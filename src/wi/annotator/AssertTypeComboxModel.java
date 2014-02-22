@@ -9,6 +9,11 @@ public class AssertTypeComboxModel extends DefaultComboBoxModel {
 	private HashMap<String, Vector<String> > content = new HashMap<String, Vector<String> >();
 	
 	private String condition = "problem";//treatment
+	
+	public AssertTypeComboxModel(){
+		super();
+		setCondition(condition);
+	}
 
 	public String getCondition() {
 		return condition;
