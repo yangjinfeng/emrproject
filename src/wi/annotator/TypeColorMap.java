@@ -61,7 +61,7 @@ public class TypeColorMap {
 		}else if(relationMap.containsKey(typeId)){
 			return relationMap.get(typeId);
 		}else if(tassertMap.containsKey(typeId)){
-			return assertMap.get(typeId);
+			return tassertMap.get(typeId);
 		}
 		return null;
 	} 

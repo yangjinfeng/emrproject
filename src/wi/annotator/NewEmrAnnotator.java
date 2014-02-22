@@ -253,13 +253,14 @@ public class NewEmrAnnotator
 		    				String annotation = (String)rowdata.get(1);
 		    				Entity ent = Entity.createByAnnotationStr(annotation);
 		    				TypeColor entitytype = (TypeColor)rowdata.get(2);
-		    				boolean isMedicalProblem = false;
+		    				boolean needAssert = false;
 		    				if(entitytype != null){
 		    					ent.setEntityType(entitytype.getTypeId());
 		    					if(entitytype.getTypeId().equals("disease") ||
 		    							entitytype.getTypeId().equals("complaintsymptom") ||
-		    							entitytype.getTypeId().equals("testresult")){
-		    						isMedicalProblem = true;
+		    							entitytype.getTypeId().equals("testresult") ||
+		    							entitytype.getTypeId().equals("treatment")){
+		    						needAssert = true;
 		    					}
 		    				}else{
 		    					int rowno = (Integer)rowdata.get(0);
@@ -274,7 +275,7 @@ public class NewEmrAnnotator
 		    				if(asserttype != null){
 		    					ent.setAssertType(asserttype.getTypeId());
 		    				}else{
-		    					if(isMedicalProblem){
+		    					if(needAssert){
 		    						int rowno = (Integer)rowdata.get(0);
 		    						sb.append("第"+rowno+"行需要选择修饰类型\n");
 		    					}
@@ -423,15 +424,15 @@ public class NewEmrAnnotator
 			    	if(tc.getFlag() == 0){
 			    		table.setValueAt(null, row, table.getColumnModel().getColumnIndex("修饰"));
 			    	}
-//			    	if(tc.getFlag() == 1){
-//			    		DefaultCellEditor editor = (DefaultCellEditor)table.getCellEditor(row, table.getColumnModel().getColumnIndex("修饰"));
-//			    		AssertTypeComboxModel model = (AssertTypeComboxModel)((JComboBox)editor.getComponent()).getModel();
-//			    		if(tc.getTypeId().equals("treatment")){
-//			    			model.setCondition("treatment");
-//			    		}else{
-//			    			model.setCondition("problem");
-//			    		}
-//			    	}
+			    	if(tc.getFlag() == 1){
+			    		DefaultCellEditor editor = (DefaultCellEditor)table.getCellEditor(row, table.getColumnModel().getColumnIndex("修饰"));
+			    		AssertTypeComboxModel model = (AssertTypeComboxModel)((JComboBox)editor.getComponent()).getModel();
+			    		if(tc.getTypeId().equals("treatment")){
+			    			model.setCondition("treatment");
+			    		}else{
+			    			model.setCondition("problem");
+			    		}
+			    	}
 
 				}
 			}
@@ -440,7 +441,7 @@ public class NewEmrAnnotator
 		table.setSurrendersFocusOnKeystroke(true);
 		model.setColumnIdentifiers(columnNames);
 		table.setModel(model);
-		table.getColumn("类型").setCellRenderer(new TypeCellRender(true));
+		
 		
 		table.setRowHeight(25);
 		
@@ -457,17 +458,20 @@ public class NewEmrAnnotator
 	    
 	    DefaultCellEditor typeeditor = new DefaultCellEditor(combo);
 	    table.getColumn("类型").setCellEditor(typeeditor);//将第3列设为附类下拉选项
+	    table.getColumn("类型").setCellRenderer(new TypeCellRender(true));
 	    
-//	    AssertTypeComboxModel atcm = new AssertTypeComboxModel();
-	    JComboBox combo2 = new JComboBox();//建立修饰分类下拉菜单
-//	    AssertTypeFocusListener atfl = new AssertTypeFocusListener(table,combo2);
+	    AssertTypeComboxModel atcm = new AssertTypeComboxModel();
+	    JComboBox combo2 = new JComboBox(atcm);//建立修饰分类下拉菜单
+	    AssertTypeMouseListener atml = new AssertTypeMouseListener(table,combo2);
+	    combo2.getComponent(0).addMouseListener(atml);
 //	    combo2.addFocusListener(atfl);
-		for(TypeColor tc : TypeColorMap.getAssertTypeArray()){
-			combo2.addItem(tc);
-		}
+//		for(TypeColor tc : TypeColorMap.getAssertTypeArray()){
+//			combo2.addItem(tc);
+//		}
 	    combo2.setEditable(false);
 	    DefaultCellEditor asserteditor = new DefaultCellEditor(combo2);
 	    table.getColumn("修饰").setCellEditor(asserteditor);//将第3列设为附类下拉选项
+	    table.getColumn("修饰").setCellRenderer(new AsserttypeRender());
 	    
 	    table.getColumn("行号").setPreferredWidth(1);
 	    addTableMouseListener(textPane,table);
