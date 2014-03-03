@@ -506,6 +506,9 @@ public class NewEmrAnnotator
 	    return btnpanel;
 	}
 	
+	
+	
+	
 	private static void addEntityAnnotationTab(JTabbedPane tabbedPane, String text)//页面一：实体标注
 	{
 		JPanel entityPanel = new JPanel();//新建一个版面
@@ -515,6 +518,7 @@ public class NewEmrAnnotator
 		entityTextPane.setEditable(false);//该文本是不能由用户在框内编辑的
 	    
 		final JTable table = createEntityTable(entityTextPane,true);	  
+		addTextPaneListener(entityTextPane,table);
 		
 	    JPanel btnpanel = createEntityButtonPanel(entityTextPane,table);
 	    entityPanel.add(btnpanel,BorderLayout.NORTH);
@@ -534,6 +538,29 @@ public class NewEmrAnnotator
 	}
 	
 	
+	private static void addTextPaneListener(final JTextPane entityTextPane,final JTable table){
+		MouseListener listenser = new MouseAdapter(){
+			public void mouseClicked(MouseEvent e) {
+				if(e.getButton() == MouseEvent.BUTTON3){
+					int pos = entityTextPane.viewToModel(e.getPoint());
+					int rows = table.getRowCount();
+					for(int i = 0;i < rows;i ++){
+						String entityvalue = (String)table.getValueAt(i, table.getColumnModel().getColumnIndex("实体"));
+						Entity ent = Entity.createByAnnotationStr(entityvalue);
+						if(ent.getStartPos() <= pos && ent.getEndPos() >= pos){
+							table.setRowSelectionInterval(i, i);
+							Rectangle rect = table.getCellRect(i, 0, true);  
+				    		table.scrollRectToVisible(rect);
+							break;
+						}
+					}
+				}
+			}
+			
+		};
+		
+		entityTextPane.addMouseListener(listenser);
+	}
 	
 	
 	private static JTable createRelationTable(final JTextPane textPane ){

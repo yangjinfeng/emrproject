@@ -29,6 +29,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 
 
 import java.awt.event.KeyEvent;
@@ -687,7 +688,8 @@ public class NewEmrAnnotatorComparator
 		final JTextPane entityTextPane = new JTextPane();//新建一个文本编辑框，用来显示文本及进行操作
 		entityTextPane.setEditable(false);//该文本是不能由用户在框内编辑的
 	    
-		final JTable table = createEntityTable(entityTextPane,true);	  
+		final JTable table = createEntityTable(entityTextPane,true);	
+		addTextPaneListener(entityTextPane,table);
 		
 	    JPanel btnpanel = createEntityButtonPanel(entityTextPane,table);
 	    entityPanel.add(btnpanel,BorderLayout.NORTH);
@@ -706,7 +708,30 @@ public class NewEmrAnnotatorComparator
 		tabbedPane.addTab(text, entityPanel);
 	}
 	
-	
+	private static void addTextPaneListener(final JTextPane entityTextPane,final JTable table){
+		MouseListener listenser = new MouseAdapter(){
+			public void mouseClicked(MouseEvent e) {
+				if(e.getButton() == MouseEvent.BUTTON3){
+					int pos = entityTextPane.viewToModel(e.getPoint());
+					int rows = table.getRowCount();
+					for(int i = 0;i < rows;i ++){
+						String entityvalue = (String)table.getValueAt(i, table.getColumnModel().getColumnIndex("实体"));
+						Entity ent = Entity.createByAnnotationStr(entityvalue);
+						if(ent.getStartPos() <= pos && ent.getEndPos() >= pos){
+							table.setRowSelectionInterval(i, i);
+							Rectangle rect = table.getCellRect(i, 0, true);  
+				    		table.scrollRectToVisible(rect);
+							break;
+						}
+					}
+				}
+			}
+			
+		};
+		
+		entityTextPane.addMouseListener(listenser);
+	}
+
 	
 	
 	private static JTable createRelationTable(final JTextPane textPane ){
