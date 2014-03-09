@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class EntityCleaner {
-	private static Character[] fuhao = new Character[]{'.',',','"','\'',':',';','¡¢','£»','¡¢','¡°','¡±'};
+	private static Character[] fuhao = new Character[]{' ','	','.',',','"','\'',':',';','¡¢','£»','¡¢','¡°','¡±'};
 	private static Set<Character> fuhaoset = new HashSet<Character>(Arrays.asList(fuhao));
 	
 	
@@ -44,7 +44,7 @@ public class EntityCleaner {
 	
 	public static void main(String[] args) {
 		Entity ent = new Entity();
-		ent.setEntity(" yangjifnng,");
+		ent.setEntity(" yangjifnng\", \"");
 		ent.setStartPos(12);
 		ent.setEndPos(24);
 		
@@ -53,8 +53,8 @@ public class EntityCleaner {
 		System.out.println(e.getStartPos());
 		System.out.println(e.getEndPos());
 		
-		System.out.println(fuhao.length);
-		System.out.println(fuhaoset.contains(','));
+//		System.out.println(fuhao.length);
+//		System.out.println(fuhaoset.contains(','));
 	}
 
 }
