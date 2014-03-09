@@ -36,6 +36,7 @@ public class NewEmrAnnotator
 	public static int chooseSize = 18;
 	
 	
+	
 	private static void addOpenFileButtonListener(JButton buttonOpen,final JTextPane textPane,final JTextField inputFile,final JTable entityTable,final JTable relationTable){
 	    buttonOpen.addActionListener(new ActionListener()
 	    {
@@ -155,6 +156,7 @@ public class NewEmrAnnotator
 	    		int p0 = textPane.getSelectionStart();//选中内容的起始位置
 	    		int p1 = textPane.getSelectionEnd();//选中内容的终止位置
 
+	    		hidePopupMenu();
 	    	
 	    		if (p0 < p1)
 	    		{
@@ -200,6 +202,8 @@ public class NewEmrAnnotator
 	    {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
+	    		hidePopupMenu();
+	    		
 	    		int response = JOptionPane.showConfirmDialog(null, "您是否希望清除当前选中实体？", "提示", JOptionPane.YES_NO_OPTION);
 	    		
 	    		if (response == 0)
@@ -339,14 +343,24 @@ public class NewEmrAnnotator
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-				int row = table.getSelectedRow();
-				String entityvalue = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体"));
-				Entity ent = Entity.createByAnnotationStr(entityvalue);
-				setEntityBackground(textPane,ent);
-				GlobalCache.pastSelectedEntity = ent;
-				textPane.setCaretPosition(ent.getStartPos());
+//				int row = table.getSelectedRow();
+//				String entityvalue = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体"));
+//				Entity ent = Entity.createByAnnotationStr(entityvalue);
+//				setEntityBackground(textPane,ent);
+//				GlobalCache.pastSelectedEntity = ent;
+//				textPane.setCaretPosition(ent.getStartPos());
+				setEntitySelected(textPane,table);
 			}
 		});
+	}
+	
+	private static void setEntitySelected(JTextPane textPane,JTable table){
+		int row = table.getSelectedRow();
+		String entityvalue = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体"));
+		Entity ent = Entity.createByAnnotationStr(entityvalue);
+		setEntityBackground(textPane,ent);
+		GlobalCache.pastSelectedEntity = ent;
+		textPane.setCaretPosition(ent.getStartPos());
 	}
 	
 	private static void clearEntityColor(JTextPane textPane,Entity ent){
@@ -490,6 +504,8 @@ public class NewEmrAnnotator
 	    JButton buttonNE = new JButton("添加实体 A");
 	    JButton buttonNO = new JButton("删除实体 D");
 	    JButton buttonSave = new JButton("导出结果");
+	    JPopupMenu popmenu = new JPopupMenu();
+	    
 	    btnpanel.add(buttonOpen);
 	    btnpanel.add(buttonInNE);
 	    btnpanel.add(buttonNE);
@@ -497,11 +513,16 @@ public class NewEmrAnnotator
 	    btnpanel.add(inputFile);
 	    btnpanel.add(buttonSave);
 	    
+	    GlobalComponent.addNEButton = buttonNE;
+	    GlobalComponent.delNEButton = buttonNO;
+	    GlobalComponent.entiyPopupmenu = popmenu;
+	    
 	    addOpenFileButtonListener(buttonOpen,textPane,inputFile,table,null);
 	    addAddNEButtonListener(buttonNE,textPane,table);
 	    addExportNEButtonToTab1(buttonSave,table,inputFile);
 	    addImportNEButtonListener(buttonInNE,textPane,table);
 	    addDeleteNEButtonListener(buttonNO,textPane,table);
+//	    addPopupMenuListener();
 	    
 	    return btnpanel;
 	}
@@ -542,17 +563,23 @@ public class NewEmrAnnotator
 		MouseListener listenser = new MouseAdapter(){
 			public void mouseClicked(MouseEvent e) {
 				if(e.getButton() == MouseEvent.BUTTON3){
+					boolean existed = false;
 					int pos = entityTextPane.viewToModel(e.getPoint());
 					int rows = table.getRowCount();
 					for(int i = 0;i < rows;i ++){
 						String entityvalue = (String)table.getValueAt(i, table.getColumnModel().getColumnIndex("实体"));
 						Entity ent = Entity.createByAnnotationStr(entityvalue);
 						if(ent.getStartPos() <= pos && ent.getEndPos() >= pos){
+							existed = true;
 							table.setRowSelectionInterval(i, i);
+							setEntitySelected(entityTextPane,table);
 							Rectangle rect = table.getCellRect(i, 0, true);  
 				    		table.scrollRectToVisible(rect);
 							break;
 						}
+					}
+					if(existed || (!existed && entityTextPane.getSelectedText().length() > 0)){
+						showMenu(existed).show(entityTextPane, (int)e.getPoint().getX(), (int)e.getPoint().getY());
 					}
 				}
 			}
@@ -560,6 +587,23 @@ public class NewEmrAnnotator
 		};
 		
 		entityTextPane.addMouseListener(listenser);
+	}
+	
+	
+	private static void hidePopupMenu(){
+		if(GlobalComponent.entiyPopupmenu.isVisible()){
+			GlobalComponent.entiyPopupmenu.setVisible(false);
+		}
+	}
+	
+	private static JPopupMenu showMenu(boolean existed){
+		GlobalComponent.entiyPopupmenu.removeAll();
+		if(existed){
+			GlobalComponent.entiyPopupmenu.add(GlobalComponent.delNEButton);
+		}else{
+			GlobalComponent.entiyPopupmenu.add(GlobalComponent.addNEButton);
+		}
+		return GlobalComponent.entiyPopupmenu;
 	}
 	
 	
