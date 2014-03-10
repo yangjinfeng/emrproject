@@ -746,7 +746,8 @@ public class NewEmrAnnotatorComparator
 							break;
 						}
 					}
-					if(existed || (!existed && entityTextPane.getSelectedText().length() > 0)){
+					String selectedText = entityTextPane.getSelectedText();
+					if(existed || (!existed && selectedText != null && selectedText.length() > 0)){
 						showMenu(existed).show(entityTextPane, (int)e.getPoint().getX(), (int)e.getPoint().getY());
 					}
 				}
