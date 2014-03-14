@@ -513,9 +513,9 @@ public class NewEmrAnnotator
 	    btnpanel.add(inputFile);
 	    btnpanel.add(buttonSave);
 	    
-	    GlobalComponent.addNEButton = buttonNE;
-	    GlobalComponent.delNEButton = buttonNO;
-	    GlobalComponent.entiyPopupmenu = popmenu;
+	    GlobalComponent.addNEButton = new JButton("添加实体 A");
+	    GlobalComponent.delNEButton = new JButton("删除实体 D");
+	    
 	    
 	    addOpenFileButtonListener(buttonOpen,textPane,inputFile,table,null);
 	    addAddNEButtonListener(buttonNE,textPane,table);
@@ -524,10 +524,22 @@ public class NewEmrAnnotator
 	    addDeleteNEButtonListener(buttonNO,textPane,table);
 //	    addPopupMenuListener();
 	    
+	    copyListener(buttonNE,GlobalComponent.addNEButton);
+	    copyListener(buttonNO,GlobalComponent.delNEButton);
+	    
+	    GlobalComponent.entiyPopupmenu = popmenu;
+
+	    
 	    return btnpanel;
 	}
 	
 	
+	private static void copyListener(JButton from, JButton to){
+		ActionListener[] als = from.getActionListeners();
+		for(ActionListener al : als){
+			to.addActionListener(al);
+		}
+	}
 	
 	
 	private static void addEntityAnnotationTab(JTabbedPane tabbedPane, String text)//页面一：实体标注

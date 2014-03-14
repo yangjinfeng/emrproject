@@ -22,6 +22,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
@@ -686,8 +687,8 @@ public class NewEmrAnnotatorComparator
 	    btnpanel.add(inputFile);
 	    btnpanel.add(buttonSave);
 	    
-	    GlobalComponent.addNEButton = buttonNE;
-	    GlobalComponent.delNEButton = buttonNO;
+	    GlobalComponent.addNEButton = new JButton("添加实体 A");
+	    GlobalComponent.delNEButton = new JButton("删除实体 D");
 	    GlobalComponent.entiyPopupmenu = popmenu;
 	    
 	    addOpenFileButtonListener(buttonOpen,textPane,inputFile,table,null);
@@ -696,8 +697,21 @@ public class NewEmrAnnotatorComparator
 	    addImportNEButtonListener(buttonInNE,textPane,table);
 	    addDeleteNEButtonListener(buttonNO,textPane,table);
 	    
+	    copyListener(buttonNE,GlobalComponent.addNEButton);
+	    copyListener(buttonNO,GlobalComponent.delNEButton);
+	    
 	    return btnpanel;
 	}
+	
+	
+	
+	private static void copyListener(JButton from, JButton to){
+		ActionListener[] als = from.getActionListeners();
+		for(ActionListener al : als){
+			to.addActionListener(al);
+		}
+	}
+	
 	
 	private static void addEntityAnnotationTab(JTabbedPane tabbedPane, String text)//页面一：实体标注
 	{
