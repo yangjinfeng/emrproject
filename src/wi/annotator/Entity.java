@@ -1,5 +1,8 @@
 package wi.annotator;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Entity implements Comparable<Entity>{
 	
 	private String entity;
@@ -8,42 +11,87 @@ public class Entity implements Comparable<Entity>{
 	private String entityType;
 	private String assertType;
 	private int diff = 0;
+	private boolean qst;
 	
 	public static String ENT_START_POS_CHAR = "¡¾";
 	public static String ENT_END_POS_CHAR = "¡¿";
 	
+	public static void main(String[] args) {
+//		String ss = "C=Ã÷ÏÔ±ä»¯ P=369:373 T=complaintsymptom A=absent";
+//		Entity e = createBySaveStr(ss);
+		String[] ss = ".xml,.qst,.ent".split(",");
+		for(String s : ss){
+			
+			System.out.println(s);
+		}
+	}
+	
 	
 	public static Entity createBySaveStr(String saveStr){
 		 Entity ent = new Entity();
-		    String[] fields = saveStr.split("(C=)|(P=)|(T=)|(A=)|(X=)");
-		    int index = 0;
-		    for (String field : fields) {
-		      String f = field.trim();
-		      if (f.length() != 0)
-		      {
-		        if (index == 0) {
-		          ent.setEntity(f);
-		        } else if (index == 1) {
-		          String ps = f;
-		          ent.setStartPos(Integer.valueOf(ps.substring(0, ps.indexOf(":"))).intValue());
-		          ent.setEndPos(Integer.valueOf(ps.substring(ps.indexOf(":") + 1)).intValue());
-		        } else if (index == 2) {
-		          ent.setEntityType(f);
-		        } else if (index == 3) {
-		        	if(ent.getEntityType().equals("test") || ent.getEntityType().equals("diseasetype") ){
-		        		ent.setDiff(Integer.valueOf(f));
-		        	}else{
-		        		ent.setAssertType(f);
-		        	}
-		        }else if (index == 4) {
-		        	if( !(ent.getEntityType().equals("test") || ent.getEntityType().equals("diseasetype")) ){
-		        		ent.setDiff(Integer.valueOf(f));
-		        	}
-		        }
-		        index++;
-		      }
-		    }
-		    return ent;
+		 int Pindex = saveStr.indexOf(" P=");
+		 String entname = saveStr.substring(0, Pindex);
+		 String other = saveStr.substring(Pindex+1);
+		 ArrayList<String> fieldStrs = new ArrayList<String>();
+		 fieldStrs.add(entname);
+		 fieldStrs.addAll(Arrays.asList(other.split(" ")));
+		 for(String field : fieldStrs){
+			 String[] fn = field.split("=");
+			 if(fn[0].equals("C")){
+				 ent.setEntity(fn[1]);
+			 }else if(fn[0].equals("P")){
+				 String ps = fn[1];
+				 ent.setStartPos(Integer.valueOf(ps.substring(0, ps.indexOf(":"))).intValue());
+				 ent.setEndPos(Integer.valueOf(ps.substring(ps.indexOf(":") + 1)).intValue());
+			 }else if(fn[0].equals("T")){
+				 ent.setEntityType(fn[1]);
+			 }else if(fn[0].equals("A")){
+				 ent.setAssertType(fn[1]);
+			 }else if(fn[0].equals("X")){
+				 ent.setDiff(Integer.valueOf(fn[1]));
+			 }else if(fn[0].equals("Q")){
+				 ent.setQst(Boolean.valueOf(fn[1]));
+			 }
+		 }
+		 return ent;
+		 
+//		    String[] fields = saveStr.split("(C=)|(P=)|(T=)|(A=)|(X=)|(Q=)");
+//		    int index = 0;
+//		    for (String field : fields) {
+//		      String f = field.trim();
+//		      if (f.length() != 0)
+//		      {
+//		        if (index == 0) {
+//		          ent.setEntity(f);
+//		        } else if (index == 1) {
+//		          String ps = f;
+//		          ent.setStartPos(Integer.valueOf(ps.substring(0, ps.indexOf(":"))).intValue());
+//		          ent.setEndPos(Integer.valueOf(ps.substring(ps.indexOf(":") + 1)).intValue());
+//		        } else if (index == 2) {
+//		          ent.setEntityType(f);
+//		        } else if (index == 3) {
+//		        	if(ent.getEntityType().equals("test") || ent.getEntityType().equals("diseasetype") ){
+//		        		if(f.equals("true")){
+//		        			ent.setQst(true);
+//		        		}else{
+//		        			ent.setDiff(Integer.valueOf(f));
+//		        		}
+//		        	}else{
+//		        		ent.setAssertType(f);
+//		        	}
+//		        }else if (index == 4) {
+//		        	if( !(ent.getEntityType().equals("test") || ent.getEntityType().equals("diseasetype")) ){
+//		        		if(f.equals("true")){
+//		        			ent.setQst(true);
+//		        		}else{
+//		        			ent.setDiff(Integer.valueOf(f));
+//		        		}
+//		        	}
+//		        }
+//		        index++;
+//		      }
+//		    }
+//		    return ent;
 	}
 	
 	public int getDiff() {
@@ -67,6 +115,14 @@ public class Entity implements Comparable<Entity>{
 	}
 	
 	
+	public boolean isQst() {
+		return qst;
+	}
+
+	public void setQst(boolean qst) {
+		this.qst = qst;
+	}
+
 	public String getEntityType() {
 		return entityType;
 	}
@@ -106,6 +162,9 @@ public class Entity implements Comparable<Entity>{
 		}
 		if(getDiff() == 1 || getDiff() == 2){
 			saveStr = saveStr   +" X="+getDiff();
+		}
+		if(isQst()){
+			saveStr = saveStr   +" Q="+isQst();
 		}
 		return saveStr;
 	}

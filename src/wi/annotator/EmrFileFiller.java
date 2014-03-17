@@ -13,7 +13,16 @@ public class EmrFileFiller extends FileFilter {
 	@Override
 	public boolean accept(File pathname) {
 		// TODO Auto-generated method stub
-		return pathname.isDirectory() || pathname.getName().endsWith(suffix);
+		String[] suffixes =  suffix.split(",");
+		if(pathname.isDirectory()){
+			return true;
+		}
+		for(String s : suffixes){
+			if(pathname.getName().endsWith(s)){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

@@ -12,11 +12,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
 import javax.swing.JSplitPane;
@@ -96,7 +98,7 @@ public class NewEmrAnnotator
 	    	{
 	    		
 	    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//文件选择器
-	    		j.setFileFilter(new EmrFileFiller(".ent"));
+	    		j.setFileFilter(new EmrFileFiller(".ent,.qst"));
 	    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 	    	    	 try{
 	    	    		 clearTable(table);
@@ -127,7 +129,7 @@ public class NewEmrAnnotator
 	    	    				assertType = TypeColorMap.getType(ent.getAssertType());
 	    	    			}
 	    	    			
-	    	    			Object[] rowData = new Object[]{rowno,ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType};
+	    	    			Object[] rowData = new Object[]{rowno,ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.isQst()};
 	    	    			model.addRow(rowData);
 	    	    			setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
 	    	    			
@@ -232,63 +234,78 @@ public class NewEmrAnnotator
 	    {
 	    	public void actionPerformed(ActionEvent e)
 	    	{
+	    		if(table.getRowCount() == 0){
+	    			return;
+	    		}
+	    		DefaultTableModel model = (DefaultTableModel)table.getModel();
+    			Vector rowdatas = model.getDataVector();
+    			ArrayList<Entity> entities = new ArrayList<Entity>();
+    			StringBuffer sb = new StringBuffer();
+    			StringBuffer warning = new StringBuffer();
+    			boolean existQst = false;
+    			for(Object obj : rowdatas){
+    				String outStr = "";
+    				Vector rowdata = (Vector)obj;
+    				String annotation = (String)rowdata.get(1);
+    				Entity ent = Entity.createByAnnotationStr(annotation);
+    				TypeColor entitytype = (TypeColor)rowdata.get(2);
+    				boolean needAssert = false;
+    				if(entitytype != null){
+    					ent.setEntityType(entitytype.getTypeId());
+    					if(entitytype.getTypeId().equals("disease") ||
+    							entitytype.getTypeId().equals("complaintsymptom") ||
+    							entitytype.getTypeId().equals("testresult") ||
+    							entitytype.getTypeId().equals("treatment")){
+    						needAssert = true;
+    					}
+    				}else{
+    					int rowno = (Integer)rowdata.get(0);
+    					sb.append("第"+rowno+"行实体应选择实体类型\n");
+    				}
+    				
+    				if(ent.getEntity().matches(".*\\d+.*")){
+    					int rowno = (Integer)rowdata.get(0);
+    					warning.append("第"+rowno+"行实体中包含数字\n");
+    				}
+    				TypeColor asserttype = (TypeColor)rowdata.get(3);
+    				if(asserttype != null){
+    					ent.setAssertType(asserttype.getTypeId());
+    				}else{
+    					if(needAssert){
+    						int rowno = (Integer)rowdata.get(0);
+    						sb.append("第"+rowno+"行需要选择修饰类型\n");
+    					}
+    				}
+    				
+    				Boolean qst = (Boolean)rowdata.get(4);
+    				if(qst != null && qst){
+    					ent.setQst(qst);
+    					existQst = true;
+    				}
+    				
+    				if(ent.getEntityType() != null){
+    					entities.add(ent);
+    				}
+    				
+    			}
 	    		
 	    		String path;
 	    		JFileChooser file = new JFileChooser (GlobalCache.currentPath);
 //	    		file.setAcceptAllFileFilterUsed(false);
-	    		file.setSelectedFile(new File(inputFile.getText()+".ent"));
-	    		
-	    		if(table.getRowCount() == 0){
-	    			return;
+	    		File tobedeletedFile = null;
+	    		if(existQst){
+	    			file.setSelectedFile(new File(inputFile.getText()+".ent.qst"));
+	    		}else{
+	    			file.setSelectedFile(new File(inputFile.getText()+".ent"));
+	    			tobedeletedFile = new File(inputFile.getText()+".ent.qst");
 	    		}
+	    		
+	    		
 	    		if(file.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
 	    		{
 	    			path = file.getSelectedFile().getAbsolutePath();
 		    		try {
-		    			GlobalCache.currentPath = path;
-		    			DefaultTableModel model = (DefaultTableModel)table.getModel();
-		    			Vector rowdatas = model.getDataVector();
-		    			ArrayList<Entity> entities = new ArrayList<Entity>();
-		    			StringBuffer sb = new StringBuffer();
-		    			StringBuffer warning = new StringBuffer();
-		    			for(Object obj : rowdatas){
-		    				String outStr = "";
-		    				Vector rowdata = (Vector)obj;
-		    				String annotation = (String)rowdata.get(1);
-		    				Entity ent = Entity.createByAnnotationStr(annotation);
-		    				TypeColor entitytype = (TypeColor)rowdata.get(2);
-		    				boolean needAssert = false;
-		    				if(entitytype != null){
-		    					ent.setEntityType(entitytype.getTypeId());
-		    					if(entitytype.getTypeId().equals("disease") ||
-		    							entitytype.getTypeId().equals("complaintsymptom") ||
-		    							entitytype.getTypeId().equals("testresult") ||
-		    							entitytype.getTypeId().equals("treatment")){
-		    						needAssert = true;
-		    					}
-		    				}else{
-		    					int rowno = (Integer)rowdata.get(0);
-		    					sb.append("第"+rowno+"行实体应选择实体类型\n");
-		    				}
-		    				
-		    				if(ent.getEntity().matches(".*\\d+.*")){
-		    					int rowno = (Integer)rowdata.get(0);
-		    					warning.append("第"+rowno+"行实体中包含数字\n");
-		    				}
-		    				TypeColor asserttype = (TypeColor)rowdata.get(3);
-		    				if(asserttype != null){
-		    					ent.setAssertType(asserttype.getTypeId());
-		    				}else{
-		    					if(needAssert){
-		    						int rowno = (Integer)rowdata.get(0);
-		    						sb.append("第"+rowno+"行需要选择修饰类型\n");
-		    					}
-		    				}
-		    				if(ent.getEntityType() != null){
-		    					entities.add(ent);
-		    				}
-		    				
-		    			}
+		    			GlobalCache.currentPath = path;	    			
 		    			
 		    			String errMsg = sb.toString();
 		    			if(errMsg.length() == 0){
@@ -309,6 +326,11 @@ public class NewEmrAnnotator
 		    					}		    				
 		    					out.flush();
 		    					out.close();
+		    					
+		    					if(tobedeletedFile !=null && tobedeletedFile.exists()){
+		    						tobedeletedFile.delete();
+		    					}
+		    					
 		    					JOptionPane.showMessageDialog(null, "保存成功  路径："+path, "提示",JOptionPane.INFORMATION_MESSAGE);
 		    				}else{
 		    					JOptionPane.showMessageDialog(null, "标注结果未保存", "提示",JOptionPane.INFORMATION_MESSAGE);
@@ -405,7 +427,7 @@ public class NewEmrAnnotator
 	
 	
 	private static JTable createEntityTable(final JTextPane textPane,final boolean isForEntity){
-		Object columnNames[] = {"行号","实体", "类型","修饰"};//表格的4列意义
+		Object columnNames[] = {"行号","实体", "类型","修饰","不确定"};//表格的4列意义
 //		final Object rowData[][] = new Object[maxNum][2];//建立表格中的元素数组
 		final JTable table = new JTable(null, columnNames);//建立表格
 		DefaultTableModel model = new DefaultTableModel(){
@@ -424,6 +446,9 @@ public class NewEmrAnnotator
 							if(tc != null && (tc.getFlag() == 1)){
 								return true;
 							}
+						}
+						if(getColumnName(column).equals("不确定")){
+							return true;
 						}
                        return false;//表格不允许被编辑
             }
@@ -488,9 +513,32 @@ public class NewEmrAnnotator
 	    table.getColumn("修饰").setCellRenderer(new AsserttypeRender());
 	    
 	    table.getColumn("行号").setPreferredWidth(1);
+	    
+	    table.getColumn("不确定").setCellEditor(new DefaultCellEditor(new JCheckBox()));
 	    addTableMouseListener(textPane,table);
+	    table.getColumn("不确定").setCellRenderer(new QuestionalRenderer());
 	    
 	    return  table;
+	}
+	
+	
+	private static class QuestionalRenderer  extends DefaultTableCellRenderer{
+
+		@Override
+		public Component getTableCellRendererComponent(JTable table,
+				Object value, boolean isSelected, boolean hasFocus, int row,
+				int column) {
+			// TODO Auto-generated method stub
+			Boolean bjvalue = (Boolean)table.getValueAt(row, table.getColumnModel().getColumnIndex("不确定"));
+			JCheckBox jcb = new JCheckBox();
+			if(bjvalue != null && bjvalue){
+				jcb.setSelected(true);
+				jcb.setBackground(Color.YELLOW);
+			}else{
+				jcb.setSelected(false);
+			}
+			return  jcb;				
+		}
 	}
 	
 	private static JPanel createEntityButtonPanel(JTextPane textPane,JTable table){

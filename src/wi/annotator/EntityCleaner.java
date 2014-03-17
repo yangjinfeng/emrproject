@@ -44,7 +44,7 @@ public class EntityCleaner {
 	
 	public static void main(String[] args) {
 		Entity ent = new Entity();
-		ent.setEntity(" yangjifnng\", \"");
+		ent.setEntity("  ги yangjifnng\", \"");
 		ent.setStartPos(12);
 		ent.setEndPos(24);
 		
