@@ -32,8 +32,8 @@ public class NewRelation {
 	 * @param saveStr
 	 * @return
 	 */
-	public static Relation createBySaveStr(String saveStr){
-		Relation relation = new Relation();
+	public static NewRelation createBySaveStr(String saveStr){
+		NewRelation relation = new NewRelation();
 		String[] fields = saveStr.split("\\|\\|");
 		String  entityStr1 = fields[0].substring(fields[0].indexOf("{")+1, fields[0].indexOf("}"));
 		String  entityStr2 = fields[2].substring(fields[2].indexOf("{")+1, fields[2].indexOf("}"));
