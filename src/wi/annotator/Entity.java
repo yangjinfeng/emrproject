@@ -168,9 +168,23 @@ public class Entity implements Comparable<Entity>{
 		}
 		return saveStr;
 	}
-	
+	//xxx¡¾p1-p2¡¿type
 	public String toRelationSave(){
-		return "C=" + entity +" P="+startPos+":"+endPos;
+		return toAnnotation() + getEntityType();
+	}
+	
+	public static Entity createByRelSaveStr(String relSaveStr){
+		Entity ent = createByAnnotationStr(relSaveStr);
+//		String str = relSaveStr.substring(relSaveStr.indexOf(ENT_START_POS_CHAR)+1,relSaveStr.indexOf(ENT_END_POS_CHAR));
+//		String entity = relSaveStr.substring(0,relSaveStr.indexOf(ENT_START_POS_CHAR));
+//		int p0 = Integer.valueOf(str.substring(0,str.indexOf("-")));
+//		int p1 = Integer.valueOf(str.substring(str.indexOf("-")+1));
+//		ent.setEntity(entity);
+//		ent.setStartPos(p0);
+//		ent.setEndPos(p1);
+		ent.setEntityType(relSaveStr.substring(relSaveStr.indexOf(ENT_END_POS_CHAR)+1));
+		
+		return ent;
 	}
 	
 	public String toAnnotation(){
