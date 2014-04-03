@@ -195,6 +195,14 @@ public class Entity implements Comparable<Entity>{
 	public int compareTo(Entity o) {
 		return this.getStartPos() - o.getStartPos();
 	}
+
+
+	@Override
+	public boolean equals(Object obj) {
+		Entity ent = (Entity)obj;
+		
+		return getStartPos() == ent.getStartPos() && getEndPos() == ent.getEndPos();
+	}
 	
 	
 	
