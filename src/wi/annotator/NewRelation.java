@@ -1,6 +1,7 @@
 package wi.annotator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class NewRelation {
 	private ArrayList<Entity> ents1 = new ArrayList<Entity>();
@@ -53,9 +54,11 @@ public class NewRelation {
 	
 	public void addEnts1(ArrayList<Entity> es1){
 		ents1.addAll(es1);
+		Collections.sort(ents1);
 	}
 	public void addEnts2(ArrayList<Entity> es2){
 		ents2.addAll(es2);
+		Collections.sort(ents2);
 	}
 	
 	public String getEnts1Type(){
@@ -123,5 +126,6 @@ public class NewRelation {
 		}
 		return exist;
 	}
+	
 
 }
