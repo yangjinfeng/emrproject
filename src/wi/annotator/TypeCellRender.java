@@ -1,7 +1,7 @@
 package wi.annotator;
 
 import java.awt.Component;
-
+import java.awt.Color;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -24,6 +24,8 @@ public class TypeCellRender extends DefaultTableCellRenderer{
 			}else{
 				render.setBackground(((TypeColor)value).getColor());
 			}
+		}else{
+			render.setBackground(Color.WHITE);
 		}
 		return render;
 	}
