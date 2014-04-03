@@ -418,12 +418,6 @@ public class EmrRelationAnnotator
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
-//				int row = table.getSelectedRow();
-//				String entityvalue = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体"));
-//				Entity ent = Entity.createByAnnotationStr(entityvalue);
-//				setEntityBackground(textPane,ent);
-//				GlobalCache.pastSelectedEntity = ent;
-//				textPane.setCaretPosition(ent.getStartPos());
 				setEntitySelected(textPane,table);
 			}
 		});
@@ -434,7 +428,6 @@ public class EmrRelationAnnotator
 		String entityvalue = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体"));
 		Entity ent = Entity.createByAnnotationStr(entityvalue);
 		setEntityBackground(textPane,ent);
-//		GlobalCache.pastSelectedEntity = ent;
 		textPane.setCaretPosition(ent.getStartPos());
 	}
 	
@@ -463,11 +456,6 @@ public class EmrRelationAnnotator
 		
 		setEntityPairBackGround(textPane,new Entity[]{ent},TypeColor.SelectedColor);
 		
-//		if(GlobalCache.pastSelectedEntity != null){
-//			setEntityBackgroundColor(textPane,GlobalCache.pastSelectedEntity,Color.WHITE);
-//		}
-//		setEntityBackgroundColor(textPane,ent,TypeColor.SelectedColor);
-//		GlobalCache.pastSelectedEntity = ent;
 	}
 	
 	
@@ -559,10 +547,6 @@ public class EmrRelationAnnotator
 	    JComboBox combo2 = new JComboBox(atcm);//建立修饰分类下拉菜单
 	    AssertTypeMouseListener atml = new AssertTypeMouseListener(table,combo2);
 	    combo2.getComponent(0).addMouseListener(atml);
-//	    combo2.addFocusListener(atfl);
-//		for(TypeColor tc : TypeColorMap.getAssertTypeArray()){
-//			combo2.addItem(tc);
-//		}
 	    combo2.setEditable(false);
 	    DefaultCellEditor asserteditor = new DefaultCellEditor(combo2);
 	    table.getColumn("修饰").setCellEditor(asserteditor);//将第3列设为附类下拉选项
@@ -579,7 +563,6 @@ public class EmrRelationAnnotator
 //	11
 	private static JTable createEntityTableForRelation(final JTextPane textPane){
 		Object columnNames[] = {"实体", "类型","修饰"};//表格的4列意义
-//		final Object rowData[][] = new Object[maxNum][2];//建立表格中的元素数组
 		final JTable table = new JTable(null, columnNames);//建立表格
 		DefaultTableModel model = new DefaultTableModel(){
 			public boolean isCellEditable(int row, int column)
@@ -618,37 +601,11 @@ public class EmrRelationAnnotator
 		
 		table.setRowHeight(25);
 		
-		
-//		final JComboBox combo = new JComboBox();//建立实体分类下拉菜单
-//		for(TypeColor tc : TypeColorMap.getEntityTypeArray()){
-//			combo.addItem(tc);
-//		}
-//		combo.setRenderer(new ComboxRender(true));
-//		combo.setEditable(false);
-//		
-//		
-//		DefaultCellEditor typeeditor = new DefaultCellEditor(combo);
-//		table.getColumn("类型").setCellEditor(typeeditor);//将第3列设为附类下拉选项
 		table.getColumn("类型").setCellRenderer(new TypeCellRender(true));
 		
-//		AssertTypeComboxModel atcm = new AssertTypeComboxModel();
-//		JComboBox combo2 = new JComboBox(atcm);//建立修饰分类下拉菜单
-//		AssertTypeMouseListener atml = new AssertTypeMouseListener(table,combo2);
-//		combo2.getComponent(0).addMouseListener(atml);
-//	    combo2.addFocusListener(atfl);
-//		for(TypeColor tc : TypeColorMap.getAssertTypeArray()){
-//			combo2.addItem(tc);
-//		}
-//		combo2.setEditable(false);
-//		DefaultCellEditor asserteditor = new DefaultCellEditor(combo2);
-//		table.getColumn("修饰").setCellEditor(asserteditor);//将第3列设为附类下拉选项
 		table.getColumn("修饰").setCellRenderer(new AsserttypeRender());
 		
-//		table.getColumn("行号").setPreferredWidth(1);
-		
-//		table.getColumn("不确定").setCellEditor(new DefaultCellEditor(new JCheckBox()));
 		addTableMouseListener(textPane,table);
-//		table.getColumn("不确定").setCellRenderer(new QuestionalRenderer());
 		
 		return  table;
 	}
@@ -798,9 +755,9 @@ public class EmrRelationAnnotator
 				ent.setEntityType(entityType);
 				int addResult = 2;
 				if(e.getSource() == btn1){
-					addResult = addEntToList(GlobalComponent.entList1,ent,GlobalComponent.entityTxt1);					
+					addResult = addEntToList(GlobalComponent.entList1,GlobalComponent.entList2,ent,GlobalComponent.entityTxt1);					
 				}else if(e.getSource() == btn2){
-					addResult = addEntToList(GlobalComponent.entList2,ent,GlobalComponent.entityTxt2);
+					addResult = addEntToList(GlobalComponent.entList2,GlobalComponent.entList1,ent,GlobalComponent.entityTxt2);
 				}
 				
 				if(GlobalComponent.relationPopupmenu.isVisible()){
@@ -821,15 +778,17 @@ public class EmrRelationAnnotator
 		
 	}
 	
-	private static int addEntToList( ArrayList<Entity> entList, Entity ent,JTextField tf){
+	private static int addEntToList( ArrayList<Entity> entList, ArrayList<Entity> cannotExist,Entity ent,JTextField tf){
 		int canAdd = 2;
+		if(cannotExist.contains(ent)){//判断是否有相同的加入了
+			canAdd = 1;
+			return canAdd;
+		}
+		if(entList.contains(ent)){//判断是否有相同的加入了
+			canAdd = 1;
+			return canAdd;
+		}
 		if(entList.size() > 0){
-			for(Entity e : entList){//判断是否有相同的加入了
-				if(e.getStartPos() == ent.getStartPos() && e.getEndPos() == ent.getEndPos()){
-					canAdd = 1;
-					return canAdd;
-				}
-			}
 			if(entList.get(0).getEntityType().equals(ent.getEntityType())){
 				canAdd = 0;
 			}else{
@@ -905,7 +864,6 @@ public class EmrRelationAnnotator
 	private static JTable createRelationTable(final JTextPane textPane ){
 		
 		Object columnNames[] = {"实体(组)1", "实体(组)2","关系类型"};//表格的4列意义
-//		final Object rowData[][] = new Object[maxNum][2];//建立表格中的元素数组
 		final JTable table = new JTable(null, columnNames);//建立表格
 		DefaultTableModel model = new DefaultTableModel(){
 			public boolean isCellEditable(int row, int column)
@@ -924,9 +882,7 @@ public class EmrRelationAnnotator
 						return;
 					}
 					if(tc.getFlag() == 0){
-//						JOptionPane.showMessageDialog(null, "请选择具体的关系类型", "提示",JOptionPane.INFORMATION_MESSAGE);
 						setValueAt(null,row,column);
-//						setEntityPairBackGround(textPane,ent1,ent2,Color.WHITE);
 					}else{
 						GlobalComponent.relationList.get(row).setRelationType(tc.getTypeId());
 					}
@@ -956,41 +912,15 @@ public class EmrRelationAnnotator
 	    combo2.getComponent(0).addMouseListener(atml);
 	    DefaultCellEditor reltypeeditor = new DefaultCellEditor(combo2);
 	    table.getColumn("关系类型").setCellEditor(reltypeeditor);//将第3列设为附类下拉选项
-//	    table.getColumn("关系类型").setCellRenderer(new TypeCellRender(false));
-	    
-		
-//		final JComboBox combo = new JComboBox();//建立实体分类下拉菜单
-//		TypeColor[] tcs = TypeColorMap.getRelationTypeArray();
-//		combo.setMaximumRowCount(tcs.length);
-//		combo.setRenderer(new ComboxRender(false));
-//		for(TypeColor tc : tcs){
-//			combo.addItem(tc);
-//		}
-//	    combo.setEditable(false);
-//	    pp
-//	    
-//	    DefaultCellEditor typeeditor = new DefaultCellEditor(combo);
-//	    table.getColumn("关系类型").setCellEditor(typeeditor);//将第3列设为附类下拉选项
-//	    
 	    
 	    addRelationTableMouseListener(textPane,table);
 		
+	    table.getColumn("实体(组)1").setCellRenderer(new RelationEntityRenderer());
+	    table.getColumn("实体(组)2").setCellRenderer(new RelationEntityRenderer());
+	    
 		
 		return table;
 	}
-	
-//	private static void addRelationTypeListener(JComboBox combo2,JTable table){
-//		combo2.addItemListener(new ItemListener() {
-//			public void itemStateChanged(ItemEvent e) {
-//				TypeColor tc = (TypeColor)e.getItem();
-//				if(tc.getFlag() == 0){
-//					JOptionPane.showMessageDialog(null, "请选择具体的关系类型", "提示",JOptionPane.INFORMATION_MESSAGE);
-//				}else{
-//					
-//				}
-//			}
-//		});
-//	}
 	
 	
 	private static void setEntityPairBackGround(JTextPane textPane,Entity[] ents,Color color){
@@ -1013,10 +943,6 @@ public class EmrRelationAnnotator
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseReleased(MouseEvent e) {
 				int row = table.getSelectedRow();
-//				String entity1value = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体(组)1"));
-//				Entity ent1 = Entity.createByAnnotationStr(entity1value);				
-//				String entity2value = (String)table.getValueAt(row, table.getColumnModel().getColumnIndex("实体(组)2"));
-//				Entity ent2 = Entity.createByAnnotationStr(entity2value);		
 				//置背景色
 				TypeColor tc = (TypeColor)table.getValueAt(row, table.getColumnModel().getColumnIndex("关系类型"));
 				Entity[] allents = GlobalComponent.relationList.get(row).toAllEntity();
@@ -1031,20 +957,6 @@ public class EmrRelationAnnotator
 		});
 	}
 	
-	
-//	private static void addEntityBtn1Listener(JButton entityBtn1,final JTextField entityTxt1,final JTable entityTable){
-//		entityBtn1.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				int row = entityTable.getSelectedRow();
-//				if(row >= 0){
-//					entityTxt1.setText((String)entityTable.getValueAt(row, entityTable.getColumnModel().getColumnIndex("实体")));
-//				}else{
-//					JOptionPane.showMessageDialog(null, "请先选择实体表中的一行", "提示",
-//	    		            JOptionPane.INFORMATION_MESSAGE);
-//				}
-//			}
-//		});
-//	}
 	
 	private static void addAddrealtionBtnListener(JButton addRelationBtn,final JTable relationTable){
 		addRelationBtn.addActionListener(new ActionListener() {
@@ -1066,7 +978,7 @@ public class EmrRelationAnnotator
 					}else{
 						NewRelation nr = new NewRelation();
 						nr.addEnts1(GlobalComponent.entList1);
-						nr.addEnts2(GlobalComponent.entList2);
+						nr.addEnts2(GlobalComponent.entList2);						
 						if(nr.existRelation()){
 							GlobalComponent.relationList.add(nr);
 							Object[] rowData = new Object[]{nr.ents1ToAnnotation(),nr.ents2ToAnnotation(),null};
@@ -1087,10 +999,6 @@ public class EmrRelationAnnotator
 		 buttonNORel.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					int row = relationTable.getSelectedRow();
-//					String entity1value = (String)relationTable.getValueAt(row, relationTable.getColumnModel().getColumnIndex("实体1"));
-//					Entity ent1 = Entity.createByAnnotationStr(entity1value);				
-//					String entity2value = (String)relationTable.getValueAt(row, relationTable.getColumnModel().getColumnIndex("实体2"));
-//					Entity ent2 = Entity.createByAnnotationStr(entity2value);	
 					Entity[] allents = GlobalComponent.relationList.get(row).toAllEntity();
 					setEntityPairBackGround(entityTextPane,allents,Color.WHITE);
 					((DefaultTableModel)relationTable.getModel()).removeRow(row);
@@ -1156,20 +1064,9 @@ public class EmrRelationAnnotator
 			    		try {
 			    			GlobalCache.currentPath = path;
 			    			PrintWriter out = new PrintWriter(path,"UTF-8");
-//			    			DefaultTableModel model = (DefaultTableModel)relationTable.getModel();
-//			    			Vector rowdatas = model.getDataVector();
 			    			for(NewRelation nr : GlobalComponent.relationList){
-			    				
-//			    				if(relationtype != null){
-//			    					Relation rel = new Relation();
-////			    					rel.setEnt1(ent1);
-////			    					rel.setEnt2(ent2);
-//			    					rel.setRelationType(relationtype.getTypeId());
-//			    					out.println(rel.toSave());
-//			    				}
 			    				out.println(nr.toSave());
 			    			}
-			    			
 			    			out.flush();
 			    			out.close();
 			    			
@@ -1342,7 +1239,7 @@ public class EmrRelationAnnotator
 	
 	
 
-	public static void main(String args[])                                            //主函数
+	public static void main(String args[]) //主函数
 	{
 		JFrame.setDefaultLookAndFeelDecorated(true);
 		JFrame f = new JFrame("WI实验室电子病历实体和实体关系标注工具");
