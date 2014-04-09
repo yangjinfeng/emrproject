@@ -869,6 +869,9 @@ public class EmrRelationAnnotator
 			public boolean isCellEditable(int row, int column)
 			{
 				if(getColumnName(column).equals("关系类型") ){
+					if(table.getValueAt(row, table.getColumnModel().getColumnIndex("实体(组)2")).equals("")){
+						return false;
+					}
 					return true;
 				}
 
@@ -910,7 +913,8 @@ public class EmrRelationAnnotator
 	    combo2.setEditable(false);
 	    RelationTypeListener atml = new RelationTypeListener(table,combo2);
 	    combo2.getComponent(0).addMouseListener(atml);
-	    DefaultCellEditor reltypeeditor = new DefaultCellEditor(combo2);
+	    combo2.addFocusListener(new RelationTypeItemListener(table,combo2));
+	    RelationTypeCellEditor reltypeeditor = new RelationTypeCellEditor(combo2);
 	    table.getColumn("关系类型").setCellEditor(reltypeeditor);//将第3列设为附类下拉选项
 	    
 	    addRelationTableMouseListener(textPane,table);
