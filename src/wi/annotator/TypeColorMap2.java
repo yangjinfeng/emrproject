@@ -134,12 +134,26 @@ public class TypeColorMap2 {
 		if(!existRelation(enttype1and2)){
 			return null;
 		}
-		return getRelationType2Array(relationRuleMap.get(enttype1and2));
+		return getRelationType2Array(getGeneralTypeByRule(enttype1and2));
 	}
 	
 	public static TypeColor[] getRelationType2Array(String generalType){
 		
 		return relationMap2.get(generalType).values().toArray(new TypeColor[0]);
+	}
+	
+	
+	public static String getGeneralType(String specificType){
+		for(String key : relationMap2.keySet()){
+			if(relationMap2.get(key).containsKey(specificType)){
+				return key;
+			}
+		}
+		return null;
+	}
+	
+	public static String getGeneralTypeByRule(String rule){
+		return relationRuleMap.get(rule);
 	}
 	
 	public static boolean existRelation(String enttype1and2){
