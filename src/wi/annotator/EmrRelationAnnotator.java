@@ -18,7 +18,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.DefaultCellEditor;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JFileChooser;
@@ -988,6 +990,16 @@ public class EmrRelationAnnotator
 							Object[] rowData = new Object[]{nr.ents1ToAnnotation(),nr.ents2ToAnnotation(),null};
 							((DefaultTableModel)relationTable.getModel()).addRow(rowData);
 							ressetCurrentSelecttion();
+							
+							//修改combox模型
+							String condition = nr.getEnts1Type() + nr.getEnts2Type();
+							DefaultCellEditor editor = (DefaultCellEditor)relationTable.getCellEditor(relationTable.getSelectedRow(), relationTable.getColumnModel().getColumnIndex("关系类型"));
+							JComboBox combox = (JComboBox)editor.getComponent();
+							RelationTypeComboxModel model = (RelationTypeComboxModel)combox.getModel();
+							model.setCondition(condition);
+							combox.setModel(model);
+							
+							
 						}else{
 							JOptionPane.showMessageDialog(null, "实体(组)1和实体(组)2不存在关系", "提示",JOptionPane.INFORMATION_MESSAGE);
 						}
