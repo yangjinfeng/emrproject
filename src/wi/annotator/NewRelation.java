@@ -3,12 +3,19 @@ package wi.annotator;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class NewRelation {
+public class NewRelation implements Comparable<NewRelation>{
 	private ArrayList<Entity> ents1 = new ArrayList<Entity>();
 	private ArrayList<Entity> ents2 = new ArrayList<Entity>();
 	private String relationType;	
+	private boolean qst=false; 
 	
 	
+	public boolean isQst() {
+		return qst;
+	}
+	public void setQst(boolean qst) {
+		this.qst = qst;
+	}
 	public ArrayList<Entity> getEnts1() {
 		return ents1;
 	}
@@ -29,27 +36,55 @@ public class NewRelation {
 	}
 	
 	/**
-	 * E={xxx¡¾p1-p2¡¿type;xxx¡¾¡¿type}||R=xxx||E={xxx¡¾p1-p2¡¿type;xxx¡¾¡¿type}
+	 * E={xxx¡¾p1-p2¡¿type;xxx¡¾¡¿type}||R=xxx||E={xxx¡¾p1-p2¡¿type;xxx¡¾¡¿type}||Q=true
 	 * @param saveStr
 	 * @return
 	 */
 	public static NewRelation createBySaveStr(String saveStr){
 		NewRelation relation = new NewRelation();
 		String[] fields = saveStr.split("\\|\\|");
-		if(fields.length == 1){
-			String  entityStr1 = fields[0].substring(fields[0].indexOf("{")+1, fields[0].indexOf("}"));
-			createEntsByStr(relation.getEnts1(),entityStr1);
-		}else{
-			
-			String  entityStr1 = fields[0].substring(fields[0].indexOf("{")+1, fields[0].indexOf("}"));
-			String  entityStr2 = fields[2].substring(fields[2].indexOf("{")+1, fields[2].indexOf("}"));
-			createEntsByStr(relation.getEnts1(),entityStr1);
-			createEntsByStr(relation.getEnts2(),entityStr2);
-			
-			String type = fields[1].substring(fields[1].indexOf("=")+1);
-			relation.setRelationType(type);
+//		if(fields.length == 1){
+//			String  entityStr1 = fields[0].substring(fields[0].indexOf("{")+1, fields[0].indexOf("}"));
+//			createEntsByStr(relation.getEnts1(),entityStr1);
+//		}else{
+//			
+//			String  entityStr1 = fields[0].substring(fields[0].indexOf("{")+1, fields[0].indexOf("}"));
+//			String  entityStr2 = fields[2].substring(fields[2].indexOf("{")+1, fields[2].indexOf("}"));
+//			createEntsByStr(relation.getEnts1(),entityStr1);
+//			createEntsByStr(relation.getEnts2(),entityStr2);
+//			
+//			String type = fields[1].substring(fields[1].indexOf("=")+1);
+//			relation.setRelationType(type);
+//		}
+		
+		for(String field : fields){
+			if(field.startsWith("E")){
+				if(relation.getEnts1().size() == 0){
+					String  entityStr1 = field.substring(field.indexOf("{")+1, field.indexOf("}"));
+					createEntsByStr(relation.getEnts1(),entityStr1);
+					continue;
+				}
+				if(relation.getEnts2().size() == 0){
+					String  entityStr2 = field.substring(field.indexOf("{")+1, field.indexOf("}"));
+					createEntsByStr(relation.getEnts2(),entityStr2);
+				}
+			}else if(field.startsWith("R")){
+				String type = field.substring(field.indexOf("=")+1);
+				relation.setRelationType(type);
+			}else if(field.startsWith("Q")){
+				String qst = field.substring(field.indexOf("=")+1);
+				relation.setQst(Boolean.valueOf(qst));
+			}
 		}
+		
 		return relation;
+	}
+	
+	public static void main(String[] args) {
+//		String ss = "E={xxx¡¾1-2¡¿type;xxx¡¾3-4¡¿type}||R=www||E={yyy¡¾3-4¡¿type;yyy¡¾3-4¡¿type}";
+		String ss = "E={xxx¡¾1-2¡¿type;xxx¡¾3-4¡¿type}";
+		NewRelation r = NewRelation.createBySaveStr(ss);
+		System.out.println(r.toSave());
 	}
 	
 	public void addEnts1(ArrayList<Entity> es1){
@@ -101,10 +136,14 @@ public class NewRelation {
 		for(Entity ent : ents2){
 			sb2.append(ent.toRelationSave()+";");
 		}
-		if(ents2.size() == 0){
-			return "E={"+ sb1.toString() +"}";
+		String qst = "";
+		if(isQst()){
+			qst = "||Q="+isQst();
 		}
-		return "E={"+ sb1.toString() +"}||"+"R="+relationType+"||"+"E={"+ sb2.toString()+"}";
+		if(ents2.size() == 0){
+			return "E={"+ sb1.toString() +"}"+qst;
+		}
+		return "E={"+ sb1.toString() +"}||"+"R="+relationType+"||"+"E={"+ sb2.toString()+"}"+qst;
 	}
 	
 	public Entity[] toAllEntity(){
@@ -125,6 +164,11 @@ public class NewRelation {
 			}
 		}
 		return exist;
+	}
+	@Override
+	public int compareTo(NewRelation o) {
+		// TODO Auto-generated method stub
+		return this.getEnts1().get(0).getStartPos() - o.getEnts1().get(0).getStartPos();
 	}
 	
 

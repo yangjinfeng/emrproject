@@ -522,7 +522,7 @@ public class NewEmrAnnotator
 	}
 	
 	
-	private static class QuestionalRenderer  extends DefaultTableCellRenderer{
+	public static class QuestionalRenderer  extends DefaultTableCellRenderer{
 
 		@Override
 		public Component getTableCellRendererComponent(JTable table,

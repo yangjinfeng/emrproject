@@ -1,39 +1,50 @@
 package wi.annotator;
 
-import java.awt.*;
-
-import javax.swing.*; 
-import java.io.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Vector;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JFileChooser;
-import javax.swing.JSplitPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-
-
-import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Scanner;
-import java.util.Vector;
 
 public class EmrRelationAnnotator
 {
@@ -76,6 +87,17 @@ public class EmrRelationAnnotator
 	    	    		}
 	    	    		if(relationTable != null){
 	    	    			clearTable(relationTable);
+	    	    			File entfile = new File(inputFile.getText()+".ent");
+	    	    			if(entfile.exists()){	    	    				
+	    	    				importNEForRel(entfile, textPane, entityTable);
+	    	    			}
+	    	    			File relfile = new File(inputFile.getText()+".rel");
+	    	    			File relqstfile = new File(inputFile.getText()+".rel.qst");
+	    	    			if(relfile.exists()){
+	    	    				importRelation(relfile, relationTable);
+	    	    			}else if(relqstfile.exists()){
+	    	    				importRelation(relqstfile, relationTable);
+	    	    			}
 	    	    		}
 	    	    	}catch(Exception ee){}
 	    		}
@@ -159,39 +181,8 @@ public class EmrRelationAnnotator
 				j.setFileFilter(new EmrFileFiller(".ent"));
 				if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 					try{
-						clearTable(table);
 						File f=j.getSelectedFile();
-						FileInputStream in=new FileInputStream(f);
-						GlobalCache.currentPath = f.getAbsolutePath();
-						BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-						String line = null;
-						Entity sudo = new Entity();
-						sudo.setStartPos(0);
-						sudo.setEndPos(textPane.getText().length());
-						clearEntityColor(textPane,sudo);
-						DefaultTableModel model = (DefaultTableModel)table.getModel();
-						ArrayList<Entity> ents = new ArrayList<Entity>(); 
-						while((line = br.readLine())!= null){
-							if(line.length() > 0){
-								Entity ent = Entity.createBySaveStr(line);	    	    				
-								ents.add(ent);	    	    				
-							}
-						}
-						Collections.sort(ents);
-						for(Entity ent : ents){
-							TypeColor assertType = null;
-							if(ent.getAssertType() != null){
-								assertType = TypeColorMap.getType(ent.getAssertType());
-							}
-							
-							Object[] rowData = new Object[]{ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType};
-							model.addRow(rowData);
-							setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
-							
-						}
-						
-						
-						br.close();
+						importNEForRel(f,textPane,table);
 						
 					}catch(Exception ex){
 						
@@ -200,6 +191,41 @@ public class EmrRelationAnnotator
 				
 			}
 		});
+	}
+	
+	private static void importNEForRel(File f, JTextPane textPane, JTable table)throws Exception{
+		clearTable(table);
+		FileInputStream in=new FileInputStream(f);
+		GlobalCache.currentPath = f.getAbsolutePath();
+		BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+		String line = null;
+		Entity sudo = new Entity();
+		sudo.setStartPos(0);
+		sudo.setEndPos(textPane.getText().length());
+		clearEntityColor(textPane,sudo);
+		DefaultTableModel model = (DefaultTableModel)table.getModel();
+		ArrayList<Entity> ents = new ArrayList<Entity>(); 
+		while((line = br.readLine())!= null){
+			if(line.length() > 0){
+				Entity ent = Entity.createBySaveStr(line);	    	    				
+				ents.add(ent);	    	    				
+			}
+		}
+		Collections.sort(ents);
+		for(Entity ent : ents){
+			TypeColor assertType = null;
+			if(ent.getAssertType() != null){
+				assertType = TypeColorMap.getType(ent.getAssertType());
+			}
+			
+			Object[] rowData = new Object[]{ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType};
+			model.addRow(rowData);
+			setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
+			
+		}
+		
+		
+		br.close();
 	}
 	
 	private static void addAddNEButtonListener(JButton buttonNE,final JTextPane textPane,final JTable table){
@@ -865,7 +891,7 @@ public class EmrRelationAnnotator
 	
 	private static JTable createRelationTable(final JTextPane textPane ){
 		
-		Object columnNames[] = {"实体(组)1", "实体(组)2","关系类型"};//表格的4列意义
+		Object columnNames[] = {"实体(组)1", "实体(组)2","关系类型","不确定"};//表格的4列意义
 		final JTable table = new JTable(null, columnNames);//建立表格
 		DefaultTableModel model = new DefaultTableModel(){
 			public boolean isCellEditable(int row, int column)
@@ -874,6 +900,9 @@ public class EmrRelationAnnotator
 					if(table.getValueAt(row, table.getColumnModel().getColumnIndex("实体(组)2")).equals("")){
 						return false;
 					}
+					return true;
+				}
+				if(getColumnName(column).equals("不确定")){
 					return true;
 				}
 
@@ -924,6 +953,9 @@ public class EmrRelationAnnotator
 	    table.getColumn("实体(组)1").setCellRenderer(new RelationEntityRenderer());
 	    table.getColumn("实体(组)2").setCellRenderer(new RelationEntityRenderer());
 	    
+	    table.getColumn("不确定").setCellEditor(new DefaultCellEditor(new JCheckBox()));
+	    table.getColumn("不确定").setCellRenderer(new QuestionalRenderer());
+
 		
 		return table;
 	}
@@ -1028,28 +1060,11 @@ public class EmrRelationAnnotator
 				public void actionPerformed(ActionEvent e) {
 					GlobalComponent.relationList.clear();
 		    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//文件选择器
-		    		j.setFileFilter(new EmrFileFiller(".rel"));
+		    		j.setFileFilter(new EmrFileFiller(".rel,.qst"));
 		    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 		    	    	 try{
 		 	    	    	File f=j.getSelectedFile();
-		 	    	    	FileInputStream in=new FileInputStream(f);
-		 	    	    	GlobalCache.currentPath = f.getAbsolutePath();
-		    	    		BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-		    	    		String line = null;
-		    	    		DefaultTableModel model = (DefaultTableModel)relationTable.getModel();
-		    	    		
-		    	    		clearTable(relationTable);
-		    	    		
-		    	    		
-		    	    		while((line = br.readLine())!= null){
-		    	    			if(line.length() > 0){
-		    	    				NewRelation rel = NewRelation.createBySaveStr(line);
-		    	    				GlobalComponent.relationList.add(rel);
-		    	    				Object[] rowData = new Object[]{rel.ents1ToAnnotation(),rel.ents2ToAnnotation(),TypeColorMap2.getType(rel.getRelationType())};
-		    	    				model.addRow(rowData);
-		    	    			}
-		    	    		}
-		    	    		br.close();
+		 	    	    	importRelation(f,relationTable);
 		    	    		
 		 	    	    	
 		    	    	 }catch(Exception ex){
@@ -1059,6 +1074,30 @@ public class EmrRelationAnnotator
 				}
 			});
 	 }
+	
+	private static void importRelation(File f,JTable relationTable)throws Exception{
+		clearTable(relationTable);
+		GlobalComponent.relationList.clear();
+		FileInputStream in=new FileInputStream(f);
+		GlobalCache.currentPath = f.getAbsolutePath();
+		BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+		String line = null;
+		while((line = br.readLine())!= null){
+			if(line.length() > 0){
+				NewRelation rel = NewRelation.createBySaveStr(line);
+				GlobalComponent.relationList.add(rel);
+			}
+		}
+		
+		DefaultTableModel model = (DefaultTableModel)relationTable.getModel();
+		Collections.sort(GlobalComponent.relationList);
+		for(NewRelation rel : GlobalComponent.relationList){
+			Object[] rowData = new Object[]{rel.ents1ToAnnotation(),rel.ents2ToAnnotation(),TypeColorMap2.getType(rel.getRelationType()),rel.isQst()};
+			rel.setQst(false);
+			model.addRow(rowData);
+		}
+		br.close();
+	}
 	 
 	 private static void addSaveRelBtnLinstener(JButton buttonSave,final JTable relationTable,final JTextField inputFile){
 		 buttonSave.addActionListener(new ActionListener()
@@ -1067,29 +1106,56 @@ public class EmrRelationAnnotator
 		    	{
 		    		
 		    		String path;
-		    		JFileChooser file = new JFileChooser (GlobalCache.currentPath);
-		    		file.setAcceptAllFileFilterUsed(false);
-		    		file.setSelectedFile(new File(inputFile.getText()+".rel"));
 		    		
 		    		if(relationTable.getRowCount() == 0){
 		    			return;
 		    		}
+		    		boolean existQst = false;
+		    		DefaultTableModel model = (DefaultTableModel)relationTable.getModel();
+		    		Vector rowdatas = model.getDataVector();
+		    		for(int i = 0;i < rowdatas.size(); i ++){
+		    			Vector rowdata = (Vector)rowdatas.get(i);
+		    			Boolean qst = (Boolean)rowdata.get(3);
+		    			if(qst != null && qst){
+		    				GlobalComponent.relationList.get(i).setQst(qst);
+		    				existQst = true;
+		    			}
+		    		}
+		    		
+		    		JFileChooser file = new JFileChooser (GlobalCache.currentPath);
+		    		file.setAcceptAllFileFilterUsed(false);
+		    		File tobedeletedFile = null;
+		    		File saveFile = null;
+		    		
+		    		if(existQst){
+		    			saveFile = new File(inputFile.getText()+".rel.qst");
+		    			tobedeletedFile = new File(inputFile.getText()+".rel");
+		    		}else{
+		    			saveFile = new File(inputFile.getText()+".rel");
+		    			tobedeletedFile = new File(inputFile.getText()+".rel.qst");
+		    		}
+		    		file.setSelectedFile(saveFile);
+		    		
 		    		if(file.showSaveDialog(null) == JFileChooser.APPROVE_OPTION)
 		    		{
 		    			path = file.getSelectedFile().getAbsolutePath();
 			    		try {
 			    			GlobalCache.currentPath = path;
-			    			PrintWriter out = new PrintWriter(path,"UTF-8");
+			    			PrintWriter out = new PrintWriter(path,"UTF-8");		    			
+			    			
+			    			Collections.sort(GlobalComponent.relationList);
 			    			for(NewRelation nr : GlobalComponent.relationList){
 			    				out.println(nr.toSave());
 			    			}
 			    			out.flush();
 			    			out.close();
 			    			
+			    			if(tobedeletedFile !=null && tobedeletedFile.exists()){
+	    						tobedeletedFile.delete();
+	    					}
+			    			importRelation(saveFile, relationTable);
 			    			
-						} catch (FileNotFoundException e1) {
-							e1.printStackTrace();
-						} catch (IOException e1) {
+						} catch (Exception e1) {
 							e1.printStackTrace();
 						}
 			    		
