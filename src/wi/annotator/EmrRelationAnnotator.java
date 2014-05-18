@@ -98,6 +98,14 @@ public class EmrRelationAnnotator
 	    	    			}else if(relqstfile.exists()){
 	    	    				importRelation(relqstfile, relationTable);
 	    	    			}
+	    	    		}else{
+	    	    			File entfile = new File(inputFile.getText()+".ent");
+	    	    			File entqstfile = new File(inputFile.getText()+".ent.qst");
+	    	    			if(entfile.exists()){
+	    	    				importNE(entfile,textPane,entityTable);
+	    	    			}else if(entqstfile.exists()){
+	    	    				importNE(entqstfile,textPane,entityTable);
+	    	    			}
 	    	    		}
 	    	    	}catch(Exception ee){}
 	    		}
@@ -116,6 +124,44 @@ public class EmrRelationAnnotator
 		}
 	}
 	
+	private static void importNE(File f, JTextPane textPane, JTable table)throws Exception{
+			clearTable(table);
+	    	FileInputStream in=new FileInputStream(f);
+ 	    	GlobalCache.currentPath = f.getAbsolutePath();
+    		BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+    		StringBuffer sb = new StringBuffer();
+    		String line = null;
+    		Entity sudo = new Entity();
+    		sudo.setStartPos(0);
+    		sudo.setEndPos(textPane.getText().length());
+    		clearEntityColor(textPane,sudo);
+    		DefaultTableModel model = (DefaultTableModel)table.getModel();
+    		ArrayList<Entity> ents = new ArrayList<Entity>(); 
+    		while((line = br.readLine())!= null){
+    			if(line.length() > 0){
+    				Entity ent = Entity.createBySaveStr(line);	    	    				
+    				ents.add(ent);	    	    				
+    			}
+    		}
+    		Collections.sort(ents);
+    		int rowno = 0;
+    		for(Entity ent : ents){
+    			rowno ++;
+    			TypeColor assertType = null;
+    			if(ent.getAssertType() != null){
+    				assertType = TypeColorMap.getType(ent.getAssertType());
+    			}
+    			
+    			Object[] rowData = new Object[]{rowno,ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.isQst()};
+    			model.addRow(rowData);
+    			setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
+    			
+    		}
+    		
+    		
+    		br.close();
+	}
+	
 	private static void addImportNEButtonListener(JButton buttonInNE,final JTextPane textPane,final JTable table){
 	    buttonInNE.addActionListener(new ActionListener()
 	    {
@@ -126,42 +172,10 @@ public class EmrRelationAnnotator
 	    		j.setFileFilter(new EmrFileFiller(".ent,.qst"));
 	    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION){
 	    	    	 try{
-	    	    		 clearTable(table);
+	    	    		 
 	 	    	    	File f=j.getSelectedFile();
-	 	    	    	FileInputStream in=new FileInputStream(f);
-	 	    	    	GlobalCache.currentPath = f.getAbsolutePath();
-	    	    		BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-	    	    		StringBuffer sb = new StringBuffer();
-	    	    		String line = null;
-	    	    		Entity sudo = new Entity();
-	    	    		sudo.setStartPos(0);
-	    	    		sudo.setEndPos(textPane.getText().length());
-	    	    		clearEntityColor(textPane,sudo);
-	    	    		DefaultTableModel model = (DefaultTableModel)table.getModel();
-	    	    		ArrayList<Entity> ents = new ArrayList<Entity>(); 
-	    	    		while((line = br.readLine())!= null){
-	    	    			if(line.length() > 0){
-	    	    				Entity ent = Entity.createBySaveStr(line);	    	    				
-	    	    				ents.add(ent);	    	    				
-	    	    			}
-	    	    		}
-	    	    		Collections.sort(ents);
-	    	    		int rowno = 0;
-	    	    		for(Entity ent : ents){
-	    	    			rowno ++;
-	    	    			TypeColor assertType = null;
-	    	    			if(ent.getAssertType() != null){
-	    	    				assertType = TypeColorMap.getType(ent.getAssertType());
-	    	    			}
-	    	    			
-	    	    			Object[] rowData = new Object[]{rowno,ent.toAnnotation(),TypeColorMap.getType(ent.getEntityType()),assertType,ent.isQst()};
-	    	    			model.addRow(rowData);
-	    	    			setEntityForeground(textPane,ent,TypeColorMap.getType(ent.getEntityType()));
-	    	    			
-	    	    		}
-	    	    		
-	    	    		
-	    	    		br.close();
+	 	    	    	
+	 	    	    	importNE(f,textPane,table);
 	 	    	    	
 	    	    	 }catch(Exception ex){
 	    	    		 
