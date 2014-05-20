@@ -57,13 +57,13 @@ public class EmrRelationAnnotator
 	    buttonOpen.addActionListener(new ActionListener()
 	    {
 	    	public void actionPerformed(ActionEvent e)
-	    	{
-	    		GlobalComponent.relationList.clear();
+	    	{	    		
 	    		JFileChooser j=new JFileChooser(GlobalCache.currentPath);//ÎÄ¼þÑ¡ÔñÆ÷
 	    		j.setFileFilter(new EmrFileFiller(".xml"));
 	    	    if(j.showOpenDialog(null) == JFileChooser.APPROVE_OPTION)
 	    		{	    	    	
 	    	    	try{
+	    	    		GlobalComponent.relationList.clear();
 	    	    		File f=j.getSelectedFile();
 	    	    		GlobalCache.currentPath = f.getAbsolutePath();
 	    	    		FileInputStream in2=new FileInputStream(f);
